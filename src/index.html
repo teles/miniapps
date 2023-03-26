@@ -6,12 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title x-ref="title">🍅 Pomodo tracker</title>
   </head>
-  <body class="w-full flex justify-center bg-gradient-to-t from-blue-500 to-indigo-500 min-h-screen flex justify-items-center items-center min-w-full">
+  <body 
+    x-data="pomodoro" 
+    class="w-full flex justify-center bg-gradient-to-t from-blue-500 to-indigo-500 min-h-screen flex justify-items-center items-center min-w-full"
+    x-cloak>
     <main class="h-100 w-full flex-col justify-center font-sans p-8 bg-white shadow rounded m-4" style="max-width:450px;">
       <header class="mb-4">
         <h1 class="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900">🍅 Pomodoro tracker</h1>
       </header>
-      <div x-data="pomodoro">
+      <div>
         <header class="text-sm font-medium text-center text-gray-500 border-b border-gray-200">
           <ul class="flex flex-wrap -mb-px">
             <template x-for="tab in tabs.items">
