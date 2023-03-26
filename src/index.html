@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title x-ref="title">🍅 Named Pomodoros</title>
+    <title>🍅 Named Pomodoros</title>
   </head>
   <style>
     [x-cloak] { display: none !important; }
@@ -92,9 +92,9 @@
                     @click="pomodoro.state === 'running' ? pause(pomodoro) : run(pomodoro)">
                     <svg class="fill-current text-white text-lg w-4" viewBox="0 0 512 512" width="24px" height="24px">
                       <path :d="icons[{
-                        'running': 'pause',
-                        'paused': 'play',
-                        'finished': 'pause'
+                        [states.running]: 'pause',
+                        [states.paused]: 'play',
+                        [states.finished]: 'pause'
                       }[pomodoro.state]]" 
                       />
                     </svg>
@@ -105,9 +105,9 @@
                     x-init="window.setInterval(() => { 
                       countdown(pomodoro);
                     }, 1_000)">
-                    <span x-text="Math.floor(pomodoro.countdown / 60)"></span>
+                    <span x-text="Math.floor(pomodoro.time_left / 60)"></span>
                     <span>:</span>
-                    <span x-text="Math.floor(pomodoro.countdown % 60) < 10 ? '0' + Math.floor(pomodoro.countdown % 60) : Math.floor(pomodoro.countdown % 60)">
+                    <span x-text="Math.floor(pomodoro.time_left % 60) < 10 ? '0' + Math.floor(pomodoro.time_left % 60) : Math.floor(pomodoro.time_left % 60)">
                     </span>
                   </button>
                 </div>
@@ -133,7 +133,7 @@
                     'finished': 'bg-blue-500'
                   }[pomodoro.state]"
                   class="h-1 block transition-all" 
-                  :style="{'width': 100 - (pomodoro.countdown / (60 * 25) * 100) + '%'}">
+                  :style="{'width': 100 - (pomodoro.time_left / (60 * 25) * 100) + '%'}">
                 </span>
               </div>                
               </div>              
@@ -145,9 +145,6 @@
         </section>
         <section x-show="tabs.active === 'configs'" class="pt-4 min-h-[320px]">
           <h2 class="text-lg mb-2 text-gray-600 font-bold">Preferences</h2>
-          <ul>
-
-          </ul>
           <label class="w-full block text-gray-500">
             <input class="mr-2 leading-tight" type="checkbox" x-model="configs.running_first">
             <span class="text-sm">
