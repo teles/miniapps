@@ -11,7 +11,7 @@
       <header class="mb-4">
         <h1 class="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900">🍅 Pomodoro tracker</h1>
       </header>
-      <div x-data="pomodoro">
+      <div x-data="pomodoro($persist)">
         <header class="text-sm font-medium text-center text-gray-500 border-b border-gray-200">
           <ul class="flex flex-wrap -mb-px">
             <template x-for="tab in tabs.items">

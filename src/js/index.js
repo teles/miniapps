@@ -1,8 +1,8 @@
-import Alpine from 'alpinejs'
 import pomodoro from './pomodoro'
-// import persist from '@alpinejs/persist'
+import persist from '@alpinejs/persist'
+import Alpine from 'alpinejs'
 import '../css/index.css'
 
+Alpine.plugin(persist)
 Alpine.data('pomodoro', pomodoro)
-// Alpine.plugin(persist)
 Alpine.start()
