@@ -4,7 +4,7 @@ import pomodoroCore from './pomodoro-core'
 import '../css/index.css'
 
 function pomodoro() {
-    return pomodoroCore(Alpine.$persist);
+    return pomodoroCore(Alpine);
 }
 
 window.pomodoro = pomodoro
