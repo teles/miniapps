@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
+    "ava": "^5.2.0",
     "css-loader": "^6.7.3",
     "html-webpack-plugin": "^5.5.0",
     "postcss": "^8.4.21",
@@ -17,7 +18,8 @@
   "scripts": {
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
-    "start": "webpack-dev-server --mode development --open"
+    "start": "webpack-dev-server --mode development --open",
+    "test": "ava"     
   },
   "dependencies": {
     "@alpinejs/persist": "^3.12.0",
