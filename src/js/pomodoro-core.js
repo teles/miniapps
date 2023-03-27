@@ -80,15 +80,6 @@ export default function (persist) {
                     from: { state: this.states.running }
                 },
                 [this.states.running]: {
-                    before: () => {
-                        this.pomodoros
-                            .filter(_pomodoro => _pomodoro != pomodoro)
-                            .forEach(_pomodoro => {
-                                if(_pomodoro.state == this.states.running) {
-                                    _pomodoro.state = this.states.paused
-                                }
-                            })
-                    },
                     from: { state: this.states.paused }
                 },
                 [this.states.finished]: {
