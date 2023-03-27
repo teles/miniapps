@@ -89,7 +89,7 @@
                   <button 
                     type="button" 
                     class="my-1 px-3 py-2 bg-gray-500 text-white cursor-pointer shadow rounded-l-md shadow-sm" 
-                    @click="pomodoro.state === 'running' ? pause(pomodoro) : run(pomodoro)">
+                    @click="update_state(pomodoro.state === states.running ? states.paused : states.running, pomodoro)">
                     <svg class="fill-current text-white text-lg w-4" viewBox="0 0 512 512" width="24px" height="24px">
                       <path :d="icons[{
                         [states.running]: 'pause',

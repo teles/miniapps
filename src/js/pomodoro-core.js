@@ -8,6 +8,11 @@ export default function (persist) {
         started_at: new Date,
         finished_at: null
     })
+    const if_every = (list, condition, callback_if_true) => {
+        if(list.every(condition)) {
+            callback_if_true()
+        }
+    }    
 
     return {
         icons: {
@@ -69,6 +74,44 @@ export default function (persist) {
                 pomodoro.finished_at = new Date()
             }
         },
+        update_state(to_state_name, pomodoro) {
+            const to_state_map = {
+                [this.states.paused]: {
+                    from: { state: this.states.running }
+                },
+                [this.states.running]: {
+                    before: () => {
+                        this.pomodoros
+                            .filter(_pomodoro => _pomodoro != pomodoro)
+                            .forEach(_pomodoro => {
+                                if(_pomodoro.state == this.states.running) {
+                                    _pomodoro.state = this.states.paused
+                                }
+                            })
+                    },
+                    from: { state: this.states.paused }
+                },
+                [this.states.finished]: {
+                    from: { state: this.states.running },
+                    to: { finished_at: new Date() }
+                },
+                [this.states.breaking]: {
+                    from: { state: this.states.finished }
+                },
+                [this.states.archived]: {
+                    from: { state: this.states.breaking }
+                }
+            }
+
+            if_every(
+                Object.keys(to_state_map[to_state_name].from), 
+                key => to_state_map[to_state_name].from[key] === pomodoro[key],
+                function () {
+                    to_state_map[to_state_name].before && to_state_map[to_state_name].before()
+                    pomodoro = Object.assign(pomodoro, to_state_map[to_state_name].to || {}, { state: to_state_name })
+                }
+            )
+        },        
         new_pomodoro_text: '',
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
         add() {
@@ -83,21 +126,6 @@ export default function (persist) {
                 })
             }
             this.new_pomodoro_text = '';
-        },
-        archive(pomodoro) {
-            pomodoro.state = this.states.archived
-        },
-        run(pomodoro) {
-            this.pomodoros = this.pomodoros.map(item => {
-                item.state = pomodoro === item ? 'running' : (pomodoro.state === 'finished' ? 'finished' : 'paused');
-                return item;
-            });
-        },
-        pause(pomodoro) {
-            this.pomodoros = this.pomodoros.map(item => {
-                item.state = pomodoro === item ? 'paused' : item.state;
-                return item;
-            });
         },
         remove(pomodoro) {
             if (pomodoro.state !== this.states.running) {
