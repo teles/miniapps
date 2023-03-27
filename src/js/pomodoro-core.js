@@ -8,9 +8,10 @@ export default function (Alpine) {
         started_at: new Date,
         finished_at: null
     })
-    const if_every = (list, condition, callback_if_true) => {
+    const if_every = (options = {}) => {
+        const { list, condition, callback } = options
         if(list.every(condition)) {
-            callback_if_true()
+            callback()
         }
     }    
     const states = {
@@ -76,12 +77,13 @@ export default function (Alpine) {
             }
         },
         update_state(to_state_name, pomodoro) {
-            const to_state_map = {
+            const to_state = {
                 [states.paused]: {
                     from: { state: states.running }
                 },
                 [states.running]: {
-                    from: { state: states.paused }
+                    from: { state: states.paused },
+                    others: {from: states.running, to: states.paused }
                 },
                 [states.finished]: {
                     from: { state: states.running },
@@ -93,16 +95,18 @@ export default function (Alpine) {
                 [states.archived]: {
                     from: { state: states.breaking }
                 }
-            }
+            }[to_state_name];
 
-            if_every(
-                Object.keys(to_state_map[to_state_name].from), 
-                key => to_state_map[to_state_name].from[key] === pomodoro[key],
-                function () {
-                    to_state_map[to_state_name].before && to_state_map[to_state_name].before()
-                    pomodoro = Object.assign(pomodoro, to_state_map[to_state_name].to || {}, { state: to_state_name })
+            if_every({
+                list: Object.keys(to_state.from), 
+                condition: key => to_state.from[key] === pomodoro[key],
+                callback: () => {
+                    to_state.others && this.pomodoros
+                        .filter(_pomodoro => _pomodoro.state === to_state.others.from)
+                        .forEach(_pomodoro => _pomodoro.state = to_state.others.to)
+                    pomodoro = Object.assign(pomodoro, to_state.to || {}, { state: to_state_name })
                 }
-            )
+            })
         },        
         new_pomodoro_text: '',
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
