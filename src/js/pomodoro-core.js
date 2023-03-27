@@ -1,10 +1,12 @@
 export default function (Alpine) {
     const seconds_pomodoro = 25 * 60
+    const seconds_breaking = 5 * 60
     const get_mockup_pomodoro = (text, state) => ({
         text,
         state,
         is_editing: false,
         time_left: seconds_pomodoro,
+        breaking_left: seconds_breaking,
         started_at: new Date,
         finished_at: null
     })
@@ -19,6 +21,8 @@ export default function (Alpine) {
         paused: 'paused',
         finished: 'finished',
         breaking: 'breaking',
+        breaking_paused: 'breaking_paused',
+        breaking_finished: 'breaking_finished',
         archived: 'archived'
     }
 
@@ -29,7 +33,127 @@ export default function (Alpine) {
             check: 'M470.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L192 338.7 425.4 105.4c12.5-12.5 32.8-12.5 45.3 0z',
             trash: 'M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z',
             pause: 'M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z',
-        },
+        },        
+        states,
+        template_by_state: {
+            [states.paused]: {
+                classes: 'bg-gray-50 border-gray-200 text-gray-500',
+                timer: {
+                    property: 'time_left',
+                    icon: 'play',
+                    classes: {
+                        action: 'bg-gray-500',
+                        counter: 'bg-gray-400 text-gray-100'
+                    },
+                    update_state_to: states.running
+                },
+                progress: {
+                    bg: 'bg-gray-100',
+                    bar: 'bg-gray-500'
+                },
+                button: {
+                    name: 'remove'
+                }
+            },
+            [states.running]: {
+                classes: 'bg-yellow-50 border-yellow-200 text-yellow-500',
+                timer: {
+                    property: 'time_left',
+                    icon: 'pause',
+                    classes: {
+                        action: 'bg-yellow-500',
+                        counter: 'bg-yellow-400 text-yellow-100'
+                    },
+                    update_state_to: states.paused
+                },
+                progress: {
+                    bg: 'bg-yellow-100',
+                    bar: 'bg-yellow-500'
+                },
+                button: {
+                    name: 'remove',
+                    disabled: true                    
+                }                	
+            },
+            [states.finished]: {
+                classes: 'bg-blue-50 border-blue-200 text-blue-500',
+                timer: {
+                    property: 'breaking_left',
+                    icon: 'play',
+                    classes: {
+                        action: 'bg-blue-500',
+                        counter: 'bg-blue-400 text-blue-100'
+                    },
+                    update_state_to: states.breaking
+                },
+                progress: {
+                    bg: 'bg-blue-100',
+                    bar: 'bg-blue-500'
+                },
+                button: {
+                    name: 'save',
+                    disabled: true
+                }                		
+            },
+            [states.breaking]: {
+                classes: 'bg-blue-50 border-blue-200 text-blue-500',
+                timer: {
+                    property: 'breaking_left',
+                    icon: 'pause',
+                    classes: {
+                        action: 'bg-blue-500',
+                        counter: 'bg-blue-400 text-blue-100'
+                    },
+                    update_state_to: states.breaking_paused
+                },
+                progress: {
+                    bg: 'bg-blue-100',
+                    bar: 'bg-blue-500'
+                },
+                button: {
+                    name: 'save',
+                    disabled: true
+                }                		
+            },
+            [states.breaking_paused]: {
+                classes: 'bg-blue-50 border-blue-200 text-blue-500',
+                timer: {
+                    property: 'breaking_left',
+                    icon: 'play',
+                    classes: {
+                        action: 'bg-blue-500',
+                        counter: 'bg-blue-400 text-blue-100'
+                    },
+                    update_state_to: states.breaking
+                },
+                progress: {
+                    bg: 'bg-blue-100',
+                    bar: 'bg-blue-500'
+                },
+                button: {
+                    name: 'remove'
+                }                		
+            },
+            [states.breaking_finished]: {
+                classes: 'bg-green-50 border-green-200 text-green-500',
+                timer: {
+                    property: 'breaking_left',
+                    icon: 'pause',
+                    classes: {
+                        action: 'bg-green-500',
+                        counter: 'bg-green-400 text-green-100'
+                    },
+                    update_state_to: states.breaking
+                },
+                progress: {
+                    bg: 'bg-green-100',
+                    bar: 'bg-green-500'
+                },
+                button: {
+                    name: 'remove'
+                } 			
+            }            
+        },          
         configs: Alpine.$persist({
             running_first: false,
             start_anytime: true
@@ -54,8 +178,7 @@ export default function (Alpine) {
                     is_blinking: false
                 }
             ]
-        }),
-        states,
+        }),  
         pomodoros: Alpine.$persist([
             get_mockup_pomodoro('Buy tomatos', 'running'),
             get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'paused'),
@@ -68,14 +191,19 @@ export default function (Alpine) {
             return this.pomodoros.filter(pomodoro => pomodoro.state === states.running).length === 1
         },
         countdown(pomodoro) {
-            if (pomodoro.time_left > 0 && pomodoro.state === states.running) {
-                pomodoro.time_left = pomodoro.time_left - 1
-            } else if (pomodoro.time_left === 0 && pomodoro.state === states.running) {
-                pomodoro.state = states.finished
-                pomodoro.time_left = 0
-                pomodoro.finished_at = new Date()
+            if(pomodoro.state === states.running) {
+                pomodoro.time_left === 0 
+                    ? this.update_state(states.breaking, pomodoro)
+                    : pomodoro.time_left--
             }
         },
+        countdown_break_time(pomodoro) {
+            if(pomodoro.state === states.finished) {
+                pomodoro.breaking_left === 0 
+                    ? this.update_state(states.breaking, pomodoro)
+                    : pomodoro.breaking_left--
+            }
+        },        
         update_state(to_state_name, pomodoro) {
             const to_state = {
                 [states.paused]: {
@@ -92,6 +220,12 @@ export default function (Alpine) {
                 [states.breaking]: {
                     from: { state: states.finished }
                 },
+                [states.breaking_paused]: {
+                    from: { state: states.breaking }
+                },
+                [states.breaking_finished]: {
+                    from: { state: states.breaking }
+                },                                
                 [states.archived]: {
                     from: { state: states.breaking }
                 }
@@ -116,6 +250,7 @@ export default function (Alpine) {
                     text: this.new_pomodoro_text,
                     state: states.paused,
                     time_left: 25 * 60,
+                    breaking_left: 5 * 60,
                     is_editing: false,
                     started_at: new Date,
                     finished_at: null
