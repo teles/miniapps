@@ -70,28 +70,31 @@ export default function (persist) {
         new_pomodoro_text: '',
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
         update_state(to_state, pomodoro) {
-            if(to_state === this.states.paused) {
-                if(pomodoro.state === this.states.running) {
-                    pomodoro.state = this.states.paused
+            const to_state_map = {
+                [this.states.paused]: () => {
+                    if(pomodoro.state === this.states.running) {
+                        pomodoro.state = this.states.paused
+                    }                    
+                },
+                [this.states.running]: () => {
+                    this.pomodoros
+                        .filter(_pomodoro => _pomodoro != pomodoro)
+                        .forEach(_pomodoro => {
+                            if(_pomodoro.state == this.states.running) {
+                                _pomodoro.state = this.states.paused;
+                            }
+                        })
+                    if(pomodoro.state === this.states.paused) {
+                        pomodoro.state = this.states.running
+                    }
+                },
+                [this.states.finished]: () => {
+                    if(pomodoro.state === this.states.running) {
+                        pomodoro.state = this.states.finished
+                        pomodoro.finished_at = new Date()
+                    }                    
                 }
-            } else if(to_state === this.states.running) {
-                this.pomodoros
-                    .filter(_pomodoro => _pomodoro != pomodoro)
-                    .forEach(_pomodoro => {
-                        if(_pomodoro.state == this.states.running) {
-                            _pomodoro.state = this.states.paused;
-                        }
-                    })
-                if(pomodoro.state === this.states.paused) {
-                    pomodoro.state = this.states.running
-                }
-            } else if(to_state === this.states.finished){
-                if(pomodoro.state === this.states.running) {
-                    pomodoro.state = this.states.finished
-                    pomodoro.finished_at = new Date()
-                }
-            }
-
+            }[to_state](pomodoro)
         },
         add() {
             if (this.new_pomodoro_text.length > 0) {
