@@ -1,5 +1,5 @@
 import test from 'ava'
-import pomodoroCore from './src/js/pomodoro-core.js'
+import pomodoroCore from './pomodoro-core.js'
 
 const AlpineMocked = {
 	$persist: x => x
