@@ -64,41 +64,19 @@ export default function (persist) {
             if (pomodoro.time_left > 0 && pomodoro.state === this.states.running) {
                 pomodoro.time_left = pomodoro.time_left - 1
             } else if (pomodoro.time_left === 0 && pomodoro.state === this.states.running) {
-                pomodoro.finish(pomodoro)                
+                pomodoro.state = this.states.finished
+                pomodoro.time_left = 0
+                pomodoro.finished_at = new Date()
             }
         },
         new_pomodoro_text: '',
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
-        update_state(to_state, pomodoro) {
-            if(to_state === this.states.paused) {
-                if(pomodoro.state === this.states.running) {
-                    pomodoro.state = this.states.paused
-                }
-            } else if(to_state === this.states.running) {
-                this.pomodoros
-                    .filter(_pomodoro => _pomodoro != pomodoro)
-                    .forEach(_pomodoro => {
-                        if(_pomodoro.state == this.states.running) {
-                            _pomodoro.state = this.states.paused;
-                        }
-                    })
-                if(pomodoro.state === this.states.paused) {
-                    pomodoro.state = this.states.running
-                }
-            } else if(to_state === this.states.finished){
-                if(pomodoro.state === this.states.running) {
-                    pomodoro.state = this.states.finished
-                    pomodoro.finished_at = new Date()
-                }
-            }
-
-        },
         add() {
             if (this.new_pomodoro_text.length > 0) {
                 this.pomodoros.push({
                     text: this.new_pomodoro_text,
                     state: this.states.paused,
-                    time_left: seconds_pomodoro,
+                    time_left: 25 * 60,
                     is_editing: false,
                     started_at: new Date,
                     finished_at: null
@@ -110,13 +88,16 @@ export default function (persist) {
             pomodoro.state = this.states.archived
         },
         run(pomodoro) {
-            this.update_state(this.states.running, pomodoro)
+            this.pomodoros = this.pomodoros.map(item => {
+                item.state = pomodoro === item ? 'running' : (pomodoro.state === 'finished' ? 'finished' : 'paused');
+                return item;
+            });
         },
         pause(pomodoro) {
-            this.update_state(this.states.paused, pomodoro)
-        },
-        finish(pomodoro) {
-            this.update_state(this.states.finished, pomodoro)
+            this.pomodoros = this.pomodoros.map(item => {
+                item.state = pomodoro === item ? 'paused' : item.state;
+                return item;
+            });
         },
         remove(pomodoro) {
             if (pomodoro.state !== this.states.running) {
