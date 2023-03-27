@@ -89,7 +89,7 @@
                   <button 
                     type="button" 
                     class="my-1 px-3 py-2 bg-gray-500 text-white cursor-pointer shadow rounded-l-md shadow-sm" 
-                    @click="pomodoro.state === 'running' ? pause(pomodoro) : run(pomodoro)">
+                    @click="update_state(pomodoro.state === states.running ? states.paused : states.running, pomodoro )">
                     <svg class="fill-current text-white text-lg w-4" viewBox="0 0 512 512" width="24px" height="24px">
                       <path :d="icons[{
                         [states.running]: 'pause',
@@ -119,7 +119,7 @@
                     'paused': 'cursor-pointer bg-red-500',
                     'finished': 'cursor-pointer bg-green-500'
                   }[pomodoro.state]"
-                  @click="pomodoro.state === 'finished' ? save(pomodoro) : remove(pomodoro)">
+                  @click="pomodoro.state === states.finished ? save(pomodoro) : remove(pomodoro)">
                   <svg class="fill-current text-white text-lg w-4" viewBox="0 0 512 512" width="24px" height="24px">
                     <path :d="pomodoro.state === 'finished' ? icons.check : icons.trash" />
                   </svg>
@@ -140,8 +140,7 @@
             </template>
           </div>
         </section>
-        <section x-show="tabs.active === 'archived'" class="min-h-[320px]">        
-          <p x-text="JSON.stringify(pomodoros.filter(pomodoro => pomodoro.state === 'archived'))"></p>
+        <section x-show="tabs.active === 'archived'" class="min-h-[320px]">                  
         </section>
         <section x-show="tabs.active === 'configs'" class="pt-4 min-h-[320px]">
           <h2 class="text-lg mb-2 text-gray-600 font-bold">Preferences</h2>
@@ -156,7 +155,7 @@
             <span class="text-sm">
               Can start new pomodoro without finishing the current one
             </span>
-          </label>                    
+          </label>
         </section>
       </div>
     </main>
