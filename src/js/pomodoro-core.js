@@ -1,5 +1,5 @@
 const stages = {
-    paused: {
+    focus_paused: {
         styles: {
             base: 'bg-gray-50 border-gray-200 text-gray-500',
             progress_bg: 'bg-gray-100',
@@ -9,10 +9,10 @@ const stages = {
         },
         type: 'paused', // icon: pause
         status: 'focus', // time_left
-        on_click: 'running',
+        on_click: 'focus_running',
         button: 'remove'
     },
-    running: {
+    focus_running: {
         styles: {
             base: 'bg-yellow-50 border-yellow-200 text-yellow-500',
             progress_bg: 'bg-yellow-100',
@@ -22,11 +22,11 @@ const stages = {
         },
         type: 'running', // icon: play, pause others
         status: 'focus', // time_left
-        on_click: 'paused',
-        on_countdown: 'finished',
+        on_click: 'focus_paused',
+        on_countdown: 'focus_finished',
         button: 'remove'
     },
-    finished: {
+    focus_finished: {
         styles: {
             base: 'bg-blue-50 border-blue-200 text-blue-500',
             progress_bg: 'bg-blue-100',
@@ -50,7 +50,7 @@ const stages = {
         type: 'running', // icon: play, pause others
         status: 'breaking', // breaking_left
         on_click: 'breaking_paused',
-        on_countdown: 'finished',
+        on_countdown: 'breaking_finished',
         button: 'remove'
     },
     breaking_paused: {
@@ -98,24 +98,15 @@ const stages = {
 export default function (Alpine) {
     const seconds_focus = 25 * 60
     const seconds_breaking = 5 * 60
-    const get_mockup_pomodoro = (text, state) => ({
+    const get_mockup_pomodoro = (text, stage) => ({
         text,
-        state,
+        stage,
         is_editing: false,
         time_left: seconds_focus,
         breaking_left: seconds_breaking,
         started_at: new Date,
         finished_at: null
     })
-    const states = {
-        running: 'running',
-        paused: 'paused',
-        finished: 'finished',
-        breaking: 'breaking',
-        breaking_paused: 'breaking_paused',
-        breaking_finished: 'breaking_finished',
-        archived: 'archived'
-    }
 
     return {
         icons: {
@@ -124,8 +115,7 @@ export default function (Alpine) {
             check: 'M470.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L192 338.7 425.4 105.4c12.5-12.5 32.8-12.5 45.3 0z',
             trash: 'M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z',
             pause: 'M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z',
-        },        
-        states,
+        },
         init() {
             this.stages = Object.keys(stages).reduce((total, key) => {
                 const stage = stages[key];
@@ -174,11 +164,11 @@ export default function (Alpine) {
             start_anytime: true
         }),
         tabs: Alpine.$persist({
-            active: 'running',
+            active: 'home',
             items: [
                 {
-                    id: 'running',
-                    label: 'Running',
+                    id: 'home',
+                    label: 'Home',
                     is_blinking: false,
                 },
                 {
@@ -195,45 +185,45 @@ export default function (Alpine) {
             ]
         }),  
         pomodoros: Alpine.$persist([
-            get_mockup_pomodoro('Buy tomatos', 'running'),
-            get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'paused'),
-            get_mockup_pomodoro('Wash dishes', 'finished')
+            get_mockup_pomodoro('Buy tomatos', 'focus_running'),
+            get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'focus_paused'),
+            get_mockup_pomodoro('Wash dishes', 'focus_finished')
         ]),
         pomodoros_archived: Alpine.$persist([]),
         handle_timer_click(pomodoro) {
-            pomodoro.state = stages[pomodoro.state].on_click
-            // TODO: if(stages[pomodoro.state].type === 'running') {}
+            if(stages[pomodoro.stage].type === 'paused') {
+                this.pomodoros
+                    .filter(_pomodoro => {
+                        return stages[pomodoro.stage].status === stages[_pomodoro.stage].status && stages[_pomodoro.stage].type === 'running'
+                    })
+                    .forEach(_pomodoro => {
+                        const paused_stage = Object.keys(stages).find(stage => stages[stage].type === 'paused');
+                        _pomodoro.stage = paused_stage
+                    })
+            }            
+            pomodoro.stage = stages[pomodoro.stage].on_click
         },
         handle_button_click(pomodoro, button_name) {
             const callback = {
                 'remove': (pomodoro) => {
-                    if (pomodoro.state !== states.running) {
-                        this.pomodoros = this.pomodoros.filter(pomodoro_item => pomodoro_item !== pomodoro)
-                    }
+                    console.log('remove: ', pomodoro)
             }}[button_name]
             callback(pomodoro);
         },
         countdown(pomodoro) {
-            if(pomodoro.state === states.running) {
-                pomodoro.time_left === 0 
-                    ? this.update_state(states.breaking, pomodoro) // TODO
-                    : pomodoro.time_left--
+            if(stages[pomodoro.stage].type === 'running') {
+                if(pomodoro[stages[pomodoro.stage].timer_property] > 0) {
+                    pomodoro[stages[pomodoro.stage].timer_property]--
+                }                    
             }
         },
-        countdown_break_time(pomodoro) {
-            if(pomodoro.state === states.finished) {
-                pomodoro.breaking_left === 0 
-                    ? this.update_state(states.breaking, pomodoro) // TODO
-                    : pomodoro.breaking_left--
-            }
-        }, 
         new_pomodoro_text: '',
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
         add() {
             if (this.new_pomodoro_text.length > 0) {
                 this.pomodoros.push({
                     text: this.new_pomodoro_text,
-                    state: states.paused,
+                    stage: 'focus_paused',
                     time_left: 25 * 60,
                     breaking_left: 5 * 60,
                     is_editing: false,

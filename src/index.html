@@ -45,7 +45,7 @@
             </template>
           </ul>
         </header>
-        <section x-show="tabs.active === 'running'" class="min-h-[320px]">
+        <section x-show="tabs.active === 'home'" class="min-h-[320px]">
           <div class="flex my-4 bg-white">
             <input 
               class="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" 
@@ -65,10 +65,10 @@
             <template x-for="pomodoro in pomodoros">
               <article 
                 class="mb-2" 
-                :class="pomodoro.state === states.running && configs.running_first ? 'order-1' : 'order-2' ">
+                :class="stages[pomodoro.stage].type === 'running' && configs.running_first ? 'order-1' : 'order-2' ">
                 <div 
                   class="flex items-center pl-2 border rounded mt-2 transition-all" 
-                  :class="stages[pomodoro.state].styles.base">
+                  :class="stages[pomodoro.stage].styles.base">
                   <p 
                     x-show="!pomodoro.is_editing" 
                     class="w-full py-2 m-2 text-sm font-medium" 
@@ -88,36 +88,36 @@
                     <button 
                       class="my-1 px-3 py-2 text-white cursor-pointer shadow rounded-l-md shadow-sm" 
                       @click="handle_timer_click(pomodoro)"
-                      :class="stages[pomodoro.state].styles.timer_action">
+                      :class="stages[pomodoro.stage].styles.timer_action">
                       <svg class="fill-current text-white text-lg w-4" viewBox="0 0 512 512" width="24px" height="24px">
-                        <path :d="icons[stages[pomodoro.state].timer_icon]" />
+                        <path :d="icons[stages[pomodoro.stage].timer_icon]" />
                       </svg>
                     </button>  
                     <div 
                       class="my-1 px-3 py-2 shadow flex rounded-r-md shadow-sm min-w-[70px]"
-                      :class="stages[pomodoro.state].styles.timer"
+                      :class="stages[pomodoro.stage].styles.timer"
                       x-init="window.setInterval(() => { countdown(pomodoro) }, 1_000)">
-                      <span x-text="Math.floor(pomodoro[stages[pomodoro.state].timer_property] / 60)"></span>
+                      <span x-text="Math.floor(pomodoro[stages[pomodoro.stage].timer_property] / 60)"></span>
                       <span>:</span>
-                      <span x-text="Math.floor(pomodoro[stages[pomodoro.state].timer_property] % 60) < 10 ? '0' + Math.floor(pomodoro[stages[pomodoro.state].timer_property] % 60) : Math.floor(pomodoro[stages[pomodoro.state].timer_property] % 60)"></span>
+                      <span x-text="Math.floor(pomodoro[stages[pomodoro.stage].timer_property] % 60) < 10 ? '0' + Math.floor(pomodoro[stages[pomodoro.stage].timer_property] % 60) : Math.floor(pomodoro[stages[pomodoro.stage].timer_property] % 60)"></span>
                     </div>                                      
                   </div>
                   <button 
                     class="m-1 rounded-md px-3 py-2 text-white shadow flex"
-                    :class="stages[pomodoro.state].styles.button"
-                    @click="handle_button_click(pomodoro, stages[pomodoro.state].button)">
+                    :class="stages[pomodoro.stage].styles.button"
+                    @click="handle_button_click(pomodoro, stages[pomodoro.stage].button)">
                     <svg class="fill-current text-white text-lg w-4" viewBox="0 0 512 512" width="24px" height="24px">
-                      <path :d="icons[stages[pomodoro.state].button_icon]" />
+                      <path :d="icons[stages[pomodoro.stage].button_icon]" />
                     </svg>                    
                   </button>                   
                 </div>
                 <div 
                   class="w-full h-1 mt-1"
-                  :class="stages[pomodoro.state].styles.progress_bg">
+                  :class="stages[pomodoro.stage].styles.progress_bg">
                   <span                     
-                    :class="stages[pomodoro.state].styles.progress_bar"
+                    :class="stages[pomodoro.stage].styles.progress_bar"
                     class="h-1 block transition-all" 
-                    :style="{'width': 100 - (pomodoro[stages[pomodoro.state].timer_property] / stages[pomodoro.state].timer_initial * 100) + '%'}">
+                    :style="{'width': 100 - (pomodoro[stages[pomodoro.stage].timer_property] / stages[pomodoro.stage].timer_initial * 100) + '%'}">
                   </span>
               </div>                 
               </article>
@@ -125,7 +125,7 @@
           </div>
         </section>
         <section x-show="tabs.active === 'archived'" class="min-h-[320px]">        
-          <p x-text="JSON.stringify(pomodoros.filter(pomodoro => pomodoro.state === 'archived'))"></p>
+          <p x-text="JSON.stringify(pomodoros.filter(pomodoro => pomodoro.stage === 'archived'))"></p>
         </section>
         <section x-show="tabs.active === 'configs'" class="pt-4 min-h-[320px]">
           <h2 class="text-lg mb-2 text-gray-600 font-bold">Preferences</h2>
