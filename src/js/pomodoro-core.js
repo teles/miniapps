@@ -1,21 +1,112 @@
+const stages = {
+    paused: {
+        styles: {
+            base: 'bg-gray-50 border-gray-200 text-gray-500',
+            progress_bg: 'bg-gray-100',
+            progress_bar: 'bg-gray-500',
+            timer_action: 'bg-gray-500',
+            timer: 'bg-gray-400 text-gray-100'
+        },
+        type: 'paused', // icon: pause
+        status: 'focus', // time_left
+        on_click: 'running',
+        button: 'remove'
+    },
+    running: {
+        styles: {
+            base: 'bg-yellow-50 border-yellow-200 text-yellow-500',
+            progress_bg: 'bg-yellow-100',
+            progress_bar: 'bg-yellow-500',
+            timer_action: 'bg-yellow-500',
+            timer: 'bg-yellow-400 text-yellow-100'
+        },
+        type: 'running', // icon: play, pause others
+        status: 'focus', // time_left
+        on_click: 'paused',
+        on_countdown: 'finished',
+        button: 'remove'
+    },
+    finished: {
+        styles: {
+            base: 'bg-blue-50 border-blue-200 text-blue-500',
+            progress_bg: 'bg-blue-100',
+            progress_bar: 'bg-blue-500',
+            timer_action: 'bg-blue-500',
+            timer: 'bg-blue-400 text-blue-100'
+        },
+        type: 'paused', // icon: play, pause others
+        status: 'focus', // time_left
+        on_click: 'breaking_running',
+        button: 'remove'
+    },
+    breaking_running: {
+        styles: {
+            base: 'bg-blue-50 border-blue-200 text-blue-500',
+            progress_bg: 'bg-blue-100',
+            progress_bar: 'bg-blue-500',
+            timer_action: 'bg-blue-500',
+            timer: 'bg-blue-400 text-blue-100'
+        },
+        type: 'running', // icon: play, pause others
+        status: 'breaking', // breaking_left
+        on_click: 'breaking_paused',
+        on_countdown: 'finished',
+        button: 'remove'
+    },
+    breaking_paused: {
+        styles: {
+            base: 'bg-blue-50 border-blue-200 text-blue-500',
+            progress_bg: 'bg-blue-100',
+            progress_bar: 'bg-blue-500',
+            timer_action: 'bg-blue-500',
+            timer: 'bg-blue-400 text-blue-100'
+        },
+        type: 'paused', // icon: pause, pause others
+        status: 'breaking', // breaking_left
+        on_click: 'breaking_running',
+        on_countdown: 'breaking_finished',
+        button: 'remove'
+    },
+    breaking_finished: {
+        styles: {
+            base: 'bg-green-50 border-green-200 text-green-500',
+            progress_bg: 'bg-green-100',
+            progress_bar: 'bg-green-500',
+            timer_action: 'bg-green-500',
+            timer: 'bg-green-400 text-green-100'
+        },
+        type: 'paused', // icon: pause, pause others
+        status: 'breaking', // breaking_left
+        on_click: 'breaking_finished',
+        button: 'remove'
+    },
+    archived: {
+        styles: {
+            base: 'bg-green-50 border-green-200 text-green-500',
+            progress_bg: 'bg-green-100',
+            progress_bar: 'bg-green-500',
+            timer_action: 'bg-green-500',
+            timer: 'bg-green-400 text-green-100'
+        },
+        type: 'paused', // icon: pause, pause others
+        status: 'breaking', // breaking_left
+        on_click: 'breaking_finished',
+        button: 'remove'
+    }    
+}
+
 export default function (Alpine) {
-    const seconds_pomodoro = 25 * 60
+    const seconds_focus = 25 * 60
     const seconds_breaking = 5 * 60
     const get_mockup_pomodoro = (text, state) => ({
         text,
         state,
         is_editing: false,
-        time_left: seconds_pomodoro,
+        time_left: seconds_focus,
         breaking_left: seconds_breaking,
         started_at: new Date,
         finished_at: null
     })
-    const if_every = (options = {}) => {
-        const { list, condition, callback } = options
-        if(list.every(condition)) {
-            callback()
-        }
-    }    
     const states = {
         running: 'running',
         paused: 'paused',
@@ -35,125 +126,49 @@ export default function (Alpine) {
             pause: 'M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z',
         },        
         states,
-        template_by_state: {
-            [states.paused]: {
-                classes: 'bg-gray-50 border-gray-200 text-gray-500',
-                timer: {
-                    property: 'time_left',
-                    icon: 'play',
-                    classes: {
-                        action: 'bg-gray-500',
-                        counter: 'bg-gray-400 text-gray-100'
-                    },
-                    update_state_to: states.running
-                },
-                progress: {
-                    bg: 'bg-gray-100',
-                    bar: 'bg-gray-500'
-                },
-                button: {
-                    name: 'remove'
-                }
-            },
-            [states.running]: {
-                classes: 'bg-yellow-50 border-yellow-200 text-yellow-500',
-                timer: {
-                    property: 'time_left',
-                    icon: 'pause',
-                    classes: {
-                        action: 'bg-yellow-500',
-                        counter: 'bg-yellow-400 text-yellow-100'
-                    },
-                    update_state_to: states.paused
-                },
-                progress: {
-                    bg: 'bg-yellow-100',
-                    bar: 'bg-yellow-500'
-                },
-                button: {
-                    name: 'remove',
-                    disabled: true                    
-                }                	
-            },
-            [states.finished]: {
-                classes: 'bg-blue-50 border-blue-200 text-blue-500',
-                timer: {
-                    property: 'breaking_left',
-                    icon: 'play',
-                    classes: {
-                        action: 'bg-blue-500',
-                        counter: 'bg-blue-400 text-blue-100'
-                    },
-                    update_state_to: states.breaking
-                },
-                progress: {
-                    bg: 'bg-blue-100',
-                    bar: 'bg-blue-500'
-                },
-                button: {
-                    name: 'save',
-                    disabled: true
-                }                		
-            },
-            [states.breaking]: {
-                classes: 'bg-blue-50 border-blue-200 text-blue-500',
-                timer: {
-                    property: 'breaking_left',
-                    icon: 'pause',
-                    classes: {
-                        action: 'bg-blue-500',
-                        counter: 'bg-blue-400 text-blue-100'
-                    },
-                    update_state_to: states.breaking_paused
-                },
-                progress: {
-                    bg: 'bg-blue-100',
-                    bar: 'bg-blue-500'
-                },
-                button: {
-                    name: 'save',
-                    disabled: true
-                }                		
-            },
-            [states.breaking_paused]: {
-                classes: 'bg-blue-50 border-blue-200 text-blue-500',
-                timer: {
-                    property: 'breaking_left',
-                    icon: 'play',
-                    classes: {
-                        action: 'bg-blue-500',
-                        counter: 'bg-blue-400 text-blue-100'
-                    },
-                    update_state_to: states.breaking
-                },
-                progress: {
-                    bg: 'bg-blue-100',
-                    bar: 'bg-blue-500'
-                },
-                button: {
-                    name: 'remove'
-                }                		
-            },
-            [states.breaking_finished]: {
-                classes: 'bg-green-50 border-green-200 text-green-500',
-                timer: {
-                    property: 'breaking_left',
-                    icon: 'pause',
-                    classes: {
-                        action: 'bg-green-500',
-                        counter: 'bg-green-400 text-green-100'
-                    },
-                    update_state_to: states.breaking
-                },
-                progress: {
-                    bg: 'bg-green-100',
-                    bar: 'bg-green-500'
-                },
-                button: {
-                    name: 'remove'
-                } 			
-            }            
-        },          
+        init() {
+            this.stages = Object.keys(stages).reduce((total, key) => {
+                const stage = stages[key];
+                const timer_icon = {
+                    'paused': 'play',
+                    'running': 'pause'
+                }[stage.type]
+    
+                const timer_property = {
+                    'focus': 'time_left',
+                    'breaking': 'breaking_left'
+                }[stage.status]
+    
+                const timer_initial = {
+                    'focus': seconds_focus,
+                    'breaking': seconds_breaking
+                }[stage.status]
+    
+                const button_style = {
+                    'remove': 'bg-red-500'
+                }[stage.button]
+    
+                const button_callback = {
+                    'remove': 'remove'
+                }[stage.button]
+    
+                const button_icon = {
+                    'remove': 'trash'
+                }[stage.button]
+    
+                stage.styles = Object.assign(stage.styles, { button: button_style })
+                total[key] = Object.assign(
+                    stage, { 
+                        timer_icon, 
+                        timer_property, 
+                        timer_initial,
+                        button_callback,
+                        button_icon
+                    }
+                );
+                return total;
+            }, {})
+        },
         configs: Alpine.$persist({
             running_first: false,
             start_anytime: true
@@ -184,64 +199,34 @@ export default function (Alpine) {
             get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'paused'),
             get_mockup_pomodoro('Wash dishes', 'finished')
         ]),
-        get archived() {
-            return this.pomodoros.filter(pomodoro => pomodoro.state === states.archived)
+        pomodoros_archived: Alpine.$persist([]),
+        handle_timer_click(pomodoro) {
+            pomodoro.state = stages[pomodoro.state].on_click
+            // TODO: if(stages[pomodoro.state].type === 'running') {}
         },
-        get has_pomorodo_running() {
-            return this.pomodoros.filter(pomodoro => pomodoro.state === states.running).length === 1
+        handle_button_click(pomodoro, button_name) {
+            const callback = {
+                'remove': (pomodoro) => {
+                    if (pomodoro.state !== states.running) {
+                        this.pomodoros = this.pomodoros.filter(pomodoro_item => pomodoro_item !== pomodoro)
+                    }
+            }}[button_name]
+            callback(pomodoro);
         },
         countdown(pomodoro) {
             if(pomodoro.state === states.running) {
                 pomodoro.time_left === 0 
-                    ? this.update_state(states.breaking, pomodoro)
+                    ? this.update_state(states.breaking, pomodoro) // TODO
                     : pomodoro.time_left--
             }
         },
         countdown_break_time(pomodoro) {
             if(pomodoro.state === states.finished) {
                 pomodoro.breaking_left === 0 
-                    ? this.update_state(states.breaking, pomodoro)
+                    ? this.update_state(states.breaking, pomodoro) // TODO
                     : pomodoro.breaking_left--
             }
-        },        
-        update_state(to_state_name, pomodoro) {
-            const to_state = {
-                [states.paused]: {
-                    from: { state: states.running }
-                },
-                [states.running]: {
-                    from: { state: states.paused },
-                    others: {from: states.running, to: states.paused }
-                },
-                [states.finished]: {
-                    from: { state: states.running },
-                    to: { finished_at: new Date() }
-                },
-                [states.breaking]: {
-                    from: { state: states.finished }
-                },
-                [states.breaking_paused]: {
-                    from: { state: states.breaking }
-                },
-                [states.breaking_finished]: {
-                    from: { state: states.breaking }
-                },                                
-                [states.archived]: {
-                    from: { state: states.breaking }
-                }
-            }[to_state_name];
-
-            if_every({
-                list: Object.keys(to_state.from), 
-                condition: key => to_state.from[key] === pomodoro[key],
-                callback: () => {
-                    to_state.others && this.pomodoros
-                        .filter(_pomodoro => _pomodoro.state === to_state.others.from)
-                        .forEach(_pomodoro => _pomodoro.state = to_state.others.to)
-                    pomodoro = Object.assign(pomodoro, to_state.to || {}, { state: to_state_name })
-                }
-            })
-        },        
+        }, 
         new_pomodoro_text: '',
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
         add() {
@@ -257,11 +242,6 @@ export default function (Alpine) {
                 })
             }
             this.new_pomodoro_text = '';
-        },
-        remove(pomodoro) {
-            if (pomodoro.state !== states.running) {
-                this.pomodoros = this.pomodoros.filter(pomodoro_item => pomodoro_item !== pomodoro)
-            }
         }
     }
 }
