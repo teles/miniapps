@@ -8,8 +8,8 @@ const stages = [
             timer_action: 'bg-gray-500',
             timer: 'bg-gray-400 text-gray-100'
         },
-        type: 'paused', // icon: pause
-        status: 'focus', // time_left
+        state: 'paused', // icon: pause
+        cycle: 'focus', // time_left
         on_click: 'focus_running',
         button: 'remove'
     },
@@ -22,8 +22,8 @@ const stages = [
             timer_action: 'bg-yellow-500',
             timer: 'bg-yellow-400 text-yellow-100'
         },
-        type: 'running', // icon: play, pause others
-        status: 'focus', // time_left
+        state: 'running', // icon: play, pause others
+        cycle: 'focus', // time_left
         on_click: 'focus_paused',
         on_countdown: 'focus_finished',
         button: 'remove'
@@ -37,8 +37,8 @@ const stages = [
             timer_action: 'bg-blue-500',
             timer: 'bg-blue-400 text-blue-100'
         },
-        type: 'paused', // icon: play, pause others
-        status: 'focus', // time_left
+        state: 'paused', // icon: play, pause others
+        cycle: 'focus', // time_left
         on_click: 'breaking_running',
         button: 'remove'
     },
@@ -51,8 +51,8 @@ const stages = [
             timer_action: 'bg-blue-500',
             timer: 'bg-blue-400 text-blue-100'
         },
-        type: 'running', // icon: play, pause others
-        status: 'breaking', // breaking_left
+        state: 'running', // icon: play, pause others
+        cycle: 'breaking', // breaking_left
         on_click: 'breaking_paused',
         on_countdown: 'breaking_finished',
         button: 'remove'
@@ -66,8 +66,8 @@ const stages = [
             timer_action: 'bg-blue-500',
             timer: 'bg-blue-400 text-blue-100'
         },
-        type: 'paused', // icon: pause, pause others
-        status: 'breaking', // breaking_left
+        state: 'paused', // icon: pause, pause others
+        cycle: 'breaking', // breaking_left
         on_click: 'breaking_running',
         on_countdown: 'breaking_finished',
         button: 'remove'
@@ -81,8 +81,8 @@ const stages = [
             timer_action: 'bg-green-500',
             timer: 'bg-green-400 text-green-100'
         },
-        type: 'paused', // icon: pause, pause others
-        status: 'breaking', // breaking_left
+        state: 'paused', // icon: pause, pause others
+        cycle: 'breaking', // breaking_left
         on_click: 'breaking_finished',
         button: 'remove'
     },
@@ -95,8 +95,8 @@ const stages = [
             timer_action: 'bg-green-500',
             timer: 'bg-green-400 text-green-100'
         },
-        type: 'paused', // icon: pause, pause others
-        status: 'breaking', // breaking_left
+        state: 'paused', // icon: pause, pause others
+        cycle: 'breaking', // breaking_left
         on_click: 'breaking_finished',
         button: 'remove'
     }    
@@ -128,15 +128,15 @@ export default function (Alpine) {
                 timer_icon: {
                     'paused': 'play',
                     'running': 'pause'                    
-                }[stage.type],
+                }[stage.state],
                 timer_property: {
                     'focus': 'time_left',
                     'breaking': 'breaking_left'
-                }[stage.status],
+                }[stage.cycle],
                 timer_initial: {
                     'focus': seconds_focus,
                     'breaking': seconds_breaking
-                }[stage.status],
+                }[stage.cycle],
                 button_style: {
                     'remove': 'bg-red-500'
                 }[stage.button],
@@ -185,14 +185,20 @@ export default function (Alpine) {
             get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'focus_paused'),
             get_mockup_pomodoro('Wash dishes', 'focus_finished')
         ]),
+        pomodoros_archived: Alpine.$persist([]),
         get_stage_by_pomodoro(pomodoro) {
             return stages.find(stage => stage.name === pomodoro.stage)
         },
         get_paused_stage_by_pomodoro(pomodoro) {
-            return stages.find(stage => stage.name === pomodoro.stage && stage.type === 'paused')
+            return stages.find(stage => stage.name === pomodoro.stage && stage.state === 'paused')
         },        
-        pomodoros_archived: Alpine.$persist([]),
+        pause_other_pomodoros() {
+
+        },
         handle_timer_click(pomodoro) { 
+            window.pomodoro = this.pomodoro
+            window.pomodoros = this.pomodoros 
+            window.stages = this.stages
             pomodoro.stage = this.get_stage_by_pomodoro(pomodoro).on_click
         },
         handle_button_click(pomodoro, button_name) {
@@ -204,7 +210,7 @@ export default function (Alpine) {
         },
         countdown(pomodoro) {
             const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
-            if(pomodoro_stage.type === 'running') {
+            if(pomodoro_stage.state === 'running') {
                 pomodoro[pomodoro_stage.timer_property] > 0 && pomodoro[pomodoro_stage.timer_property]--
             }
         },

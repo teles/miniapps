@@ -65,7 +65,7 @@
             <template x-for="pomodoro in pomodoros">
               <article 
                 class="mb-2" 
-                :class="stages_map[pomodoro.stage].type === 'running' && configs.running_first ? 'order-1' : 'order-2' ">
+                :class="stages_map[pomodoro.stage].state === 'running' && configs.running_first ? 'order-1' : 'order-2' ">
                 <div 
                   class="flex items-center pl-2 border rounded mt-2 transition-all" 
                   :class="stages_map[pomodoro.stage].styles.base">
