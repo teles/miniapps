@@ -8,9 +8,9 @@ const stages = [
             timer_action: 'bg-gray-500',
             timer: 'bg-gray-400 text-gray-100'
         },
-        state: 'paused', // icon: pause
-        cycle: 'focus', // time_left
-        on_click: 'focus_running',
+        state: 'paused',
+        cycle: 'focus',
+        on_timer_click: 'focus_running',
         button: 'remove'
     },
     {   
@@ -22,9 +22,10 @@ const stages = [
             timer_action: 'bg-yellow-500',
             timer: 'bg-yellow-400 text-yellow-100'
         },
-        state: 'running', // icon: play, pause others
-        cycle: 'focus', // time_left
-        on_click: 'focus_paused',
+        state: 'running',
+        cycle: 'focus',
+        on_timer_click: 'focus_paused',
+        on_timer_click_away: 'focus_paused',
         on_countdown: 'focus_finished',
         button: 'remove'
     },
@@ -37,9 +38,9 @@ const stages = [
             timer_action: 'bg-blue-500',
             timer: 'bg-blue-400 text-blue-100'
         },
-        state: 'paused', // icon: play, pause others
-        cycle: 'focus', // time_left
-        on_click: 'breaking_running',
+        state: 'paused',
+        cycle: 'focus',
+        on_timer_click: 'breaking_running',
         button: 'remove'
     },
     {
@@ -51,9 +52,10 @@ const stages = [
             timer_action: 'bg-blue-500',
             timer: 'bg-blue-400 text-blue-100'
         },
-        state: 'running', // icon: play, pause others
-        cycle: 'breaking', // breaking_left
-        on_click: 'breaking_paused',
+        state: 'running',
+        cycle: 'breaking',
+        on_timer_click_away: 'breaking_paused',
+        on_timer_click: 'breaking_paused',
         on_countdown: 'breaking_finished',
         button: 'remove'
     },
@@ -66,9 +68,9 @@ const stages = [
             timer_action: 'bg-blue-500',
             timer: 'bg-blue-400 text-blue-100'
         },
-        state: 'paused', // icon: pause, pause others
-        cycle: 'breaking', // breaking_left
-        on_click: 'breaking_running',
+        state: 'paused',
+        cycle: 'breaking',
+        on_timer_click: 'breaking_running',
         on_countdown: 'breaking_finished',
         button: 'remove'
     },
@@ -81,9 +83,9 @@ const stages = [
             timer_action: 'bg-green-500',
             timer: 'bg-green-400 text-green-100'
         },
-        state: 'paused', // icon: pause, pause others
-        cycle: 'breaking', // breaking_left
-        on_click: 'breaking_finished',
+        state: 'paused',
+        cycle: 'breaking',
+        on_timer_click: 'breaking_finished',
         button: 'remove'
     },
     {
@@ -95,9 +97,9 @@ const stages = [
             timer_action: 'bg-green-500',
             timer: 'bg-green-400 text-green-100'
         },
-        state: 'paused', // icon: pause, pause others
-        cycle: 'breaking', // breaking_left
-        on_click: 'breaking_finished',
+        state: 'paused',
+        cycle: 'breaking',
+        on_timer_click: 'breaking_finished',
         button: 'remove'
     }    
 ]
@@ -190,9 +192,15 @@ export default function (Alpine) {
             return stages.find(stage => stage.name === pomodoro.stage)
         },
         handle_timer_click(pomodoro) {
-            pomodoro.stage = this.get_stage_by_pomodoro(pomodoro).on_click
+            this.pomodoros
+                .filter(item => item !== pomodoro)
+                .forEach(pomodoro => {
+                    const stage = stages.find(stage => stage.name === pomodoro.stage);
+                    pomodoro.stage = stage.on_timer_click_away || pomodoro.stage;
+            })
+            pomodoro.stage = this.get_stage_by_pomodoro(pomodoro).on_timer_click
         },
-        handle_button_click(pomodoro, button_name) {
+        handle_button_timer_click(pomodoro, button_name) {
             const callback = {
                 'remove': (pomodoro) => {
                     console.log('remove: ', pomodoro)

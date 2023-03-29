@@ -105,7 +105,7 @@
                   <button 
                     class="m-1 rounded-md px-3 py-2 text-white shadow flex"
                     :class="stages_map[pomodoro.stage].styles.button"
-                    @click="handle_button_click(pomodoro, stages_map[pomodoro.stage].button)">
+                    @click="handle_button_timer_click(pomodoro, stages_map[pomodoro.stage].button)">
                     <svg class="fill-current text-white text-lg w-4" viewBox="0 0 512 512" width="24px" height="24px">
                       <path :d="icons[stages_map[pomodoro.stage].button_icon]" />
                     </svg>                    
