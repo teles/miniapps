@@ -151,6 +151,10 @@ export default function (Alpine) {
             total.push(Object.assign(stage, appendix))
             return total;
         }, []),
+        stages_map: stages.reduce((total, stage) => {
+            total[stage.name] = stage;
+            return total;
+        }, {}),        
         configs: Alpine.$persist({
             running_first: false,
             start_anytime: true
@@ -176,10 +180,6 @@ export default function (Alpine) {
                 }
             ]
         }),  
-        stages_map: stages.reduce((total, stage) => {
-            total[stage.name] = stage;
-            return total;
-        }, {}),
         pomodoros: Alpine.$persist([
             get_mockup_pomodoro('Buy tomatos', 'focus_running'),
             get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'focus_paused'),
@@ -189,16 +189,7 @@ export default function (Alpine) {
         get_stage_by_pomodoro(pomodoro) {
             return stages.find(stage => stage.name === pomodoro.stage)
         },
-        get_paused_stage_by_pomodoro(pomodoro) {
-            return stages.find(stage => stage.name === pomodoro.stage && stage.state === 'paused')
-        },        
-        pause_other_pomodoros() {
-
-        },
-        handle_timer_click(pomodoro) { 
-            window.pomodoro = this.pomodoro
-            window.pomodoros = this.pomodoros 
-            window.stages = this.stages
+        handle_timer_click(pomodoro) {
             pomodoro.stage = this.get_stage_by_pomodoro(pomodoro).on_click
         },
         handle_button_click(pomodoro, button_name) {
@@ -216,17 +207,11 @@ export default function (Alpine) {
         },
         new_pomodoro_text: '',
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
-        add() {
+        add() {          
             if (this.new_pomodoro_text.length > 0) {
-                this.pomodoros.push({
-                    text: this.new_pomodoro_text,
-                    stage: 'focus_paused',
-                    time_left: 25 * 60,
-                    breaking_left: 5 * 60,
-                    is_editing: false,
-                    started_at: new Date,
-                    finished_at: null
-                })
+                this.pomodoros.push(
+                    get_mockup_pomodoro(this.new_pomodoro_text, 'focus_paused')
+                )
             }
             this.new_pomodoro_text = '';
         }
