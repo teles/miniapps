@@ -123,44 +123,32 @@ export default function (Alpine) {
             trash: 'M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z',
             pause: 'M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z',
         },
-        stages: stages.reduce((total, stage) => {            
-            const timer_icon = {
-                'paused': 'play',
-                'running': 'pause'
-            }[stage.type]
-
-            const timer_property = {
-                'focus': 'time_left',
-                'breaking': 'breaking_left'
-            }[stage.status]
-
-            const timer_initial = {
-                'focus': seconds_focus,
-                'breaking': seconds_breaking
-            }[stage.status]
-
-            const button_style = {
-                'remove': 'bg-red-500'
-            }[stage.button]
-
-            const button_callback = {
-                'remove': 'remove'
-            }[stage.button]
-
-            const button_icon = {
-                'remove': 'trash'
-            }[stage.button]
-
-            stage.styles = Object.assign(stage.styles, { button: button_style })
-            total.push(Object.assign(
-                stage, { 
-                    timer_icon, 
-                    timer_property, 
-                    timer_initial,
-                    button_callback,
-                    button_icon
-                }
-            ))
+        stages: stages.reduce((total, stage) => {      
+            const appendix = {
+                timer_icon: {
+                    'paused': 'play',
+                    'running': 'pause'                    
+                }[stage.type],
+                timer_property: {
+                    'focus': 'time_left',
+                    'breaking': 'breaking_left'
+                }[stage.status],
+                timer_initial: {
+                    'focus': seconds_focus,
+                    'breaking': seconds_breaking
+                }[stage.status],
+                button_style: {
+                    'remove': 'bg-red-500'
+                }[stage.button],
+                button_callback: {
+                    'remove': 'remove'
+                }[stage.button],
+                button_icon: {
+                    'remove': 'trash'
+                }[stage.button]                
+            }
+            stage.styles = Object.assign(stage.styles, { button: appendix.button_style })
+            total.push(Object.assign(stage, appendix))
             return total;
         }, []),
         configs: Alpine.$persist({
