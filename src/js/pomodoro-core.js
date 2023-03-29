@@ -1,5 +1,6 @@
-const stages = {
-    focus_paused: {
+const stages = [
+    {
+        name: 'focus_paused',
         styles: {
             base: 'bg-gray-50 border-gray-200 text-gray-500',
             progress_bg: 'bg-gray-100',
@@ -12,7 +13,8 @@ const stages = {
         on_click: 'focus_running',
         button: 'remove'
     },
-    focus_running: {
+    {   
+        name: 'focus_running',            
         styles: {
             base: 'bg-yellow-50 border-yellow-200 text-yellow-500',
             progress_bg: 'bg-yellow-100',
@@ -26,7 +28,8 @@ const stages = {
         on_countdown: 'focus_finished',
         button: 'remove'
     },
-    focus_finished: {
+    {
+        name: 'focus_finished',
         styles: {
             base: 'bg-blue-50 border-blue-200 text-blue-500',
             progress_bg: 'bg-blue-100',
@@ -39,7 +42,8 @@ const stages = {
         on_click: 'breaking_running',
         button: 'remove'
     },
-    breaking_running: {
+    {
+        name: 'breaking_running',
         styles: {
             base: 'bg-blue-50 border-blue-200 text-blue-500',
             progress_bg: 'bg-blue-100',
@@ -53,7 +57,8 @@ const stages = {
         on_countdown: 'breaking_finished',
         button: 'remove'
     },
-    breaking_paused: {
+    {
+        name: 'breaking_paused',
         styles: {
             base: 'bg-blue-50 border-blue-200 text-blue-500',
             progress_bg: 'bg-blue-100',
@@ -67,7 +72,8 @@ const stages = {
         on_countdown: 'breaking_finished',
         button: 'remove'
     },
-    breaking_finished: {
+    {
+        name: 'breaking_finished',
         styles: {
             base: 'bg-green-50 border-green-200 text-green-500',
             progress_bg: 'bg-green-100',
@@ -80,7 +86,8 @@ const stages = {
         on_click: 'breaking_finished',
         button: 'remove'
     },
-    archived: {
+    {
+        name: 'archived',
         styles: {
             base: 'bg-green-50 border-green-200 text-green-500',
             progress_bg: 'bg-green-100',
@@ -93,7 +100,7 @@ const stages = {
         on_click: 'breaking_finished',
         button: 'remove'
     }    
-}
+]
 
 export default function (Alpine) {
     const seconds_focus = 25 * 60
@@ -116,49 +123,46 @@ export default function (Alpine) {
             trash: 'M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z',
             pause: 'M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z',
         },
-        init() {
-            this.stages = Object.keys(stages).reduce((total, key) => {
-                const stage = stages[key];
-                const timer_icon = {
-                    'paused': 'play',
-                    'running': 'pause'
-                }[stage.type]
-    
-                const timer_property = {
-                    'focus': 'time_left',
-                    'breaking': 'breaking_left'
-                }[stage.status]
-    
-                const timer_initial = {
-                    'focus': seconds_focus,
-                    'breaking': seconds_breaking
-                }[stage.status]
-    
-                const button_style = {
-                    'remove': 'bg-red-500'
-                }[stage.button]
-    
-                const button_callback = {
-                    'remove': 'remove'
-                }[stage.button]
-    
-                const button_icon = {
-                    'remove': 'trash'
-                }[stage.button]
-    
-                stage.styles = Object.assign(stage.styles, { button: button_style })
-                total[key] = Object.assign(
-                    stage, { 
-                        timer_icon, 
-                        timer_property, 
-                        timer_initial,
-                        button_callback,
-                        button_icon
-                    }
-                );
-                return total;
-            }, {})
-        },
+        stages: stages.reduce((total, stage) => {            
+            const timer_icon = {
+                'paused': 'play',
+                'running': 'pause'
+            }[stage.type]
+
+            const timer_property = {
+                'focus': 'time_left',
+                'breaking': 'breaking_left'
+            }[stage.status]
+
+            const timer_initial = {
+                'focus': seconds_focus,
+                'breaking': seconds_breaking
+            }[stage.status]
+
+            const button_style = {
+                'remove': 'bg-red-500'
+            }[stage.button]
+
+            const button_callback = {
+                'remove': 'remove'
+            }[stage.button]
+
+            const button_icon = {
+                'remove': 'trash'
+            }[stage.button]
+
+            stage.styles = Object.assign(stage.styles, { button: button_style })
+            total.push(Object.assign(
+                stage, { 
+                    timer_icon, 
+                    timer_property, 
+                    timer_initial,
+                    button_callback,
+                    button_icon
+                }
+            ))
+            return total;
+        }, []),
         configs: Alpine.$persist({
             running_first: false,
             start_anytime: true
@@ -184,24 +188,24 @@ export default function (Alpine) {
                 }
             ]
         }),  
+        stages_map: stages.reduce((total, stage) => {
+            total[stage.name] = stage;
+            return total;
+        }, {}),
         pomodoros: Alpine.$persist([
             get_mockup_pomodoro('Buy tomatos', 'focus_running'),
             get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'focus_paused'),
             get_mockup_pomodoro('Wash dishes', 'focus_finished')
         ]),
+        get_stage_by_pomodoro(pomodoro) {
+            return stages.find(stage => stage.name === pomodoro.stage)
+        },
+        get_paused_stage_by_pomodoro(pomodoro) {
+            return stages.find(stage => stage.name === pomodoro.stage && stage.type === 'paused')
+        },        
         pomodoros_archived: Alpine.$persist([]),
-        handle_timer_click(pomodoro) {
-            if(stages[pomodoro.stage].type === 'paused') {
-                this.pomodoros
-                    .filter(_pomodoro => {
-                        return stages[pomodoro.stage].status === stages[_pomodoro.stage].status && stages[_pomodoro.stage].type === 'running'
-                    })
-                    .forEach(_pomodoro => {
-                        const paused_stage = Object.keys(stages).find(stage => stages[stage].type === 'paused');
-                        _pomodoro.stage = paused_stage
-                    })
-            }            
-            pomodoro.stage = stages[pomodoro.stage].on_click
+        handle_timer_click(pomodoro) { 
+            pomodoro.stage = this.get_stage_by_pomodoro(pomodoro).on_click
         },
         handle_button_click(pomodoro, button_name) {
             const callback = {
@@ -211,10 +215,9 @@ export default function (Alpine) {
             callback(pomodoro);
         },
         countdown(pomodoro) {
-            if(stages[pomodoro.stage].type === 'running') {
-                if(pomodoro[stages[pomodoro.stage].timer_property] > 0) {
-                    pomodoro[stages[pomodoro.stage].timer_property]--
-                }                    
+            const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
+            if(pomodoro_stage.type === 'running') {
+                pomodoro[pomodoro_stage.timer_property] > 0 && pomodoro[pomodoro_stage.timer_property]--
             }
         },
         new_pomodoro_text: '',
