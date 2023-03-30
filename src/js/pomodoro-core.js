@@ -203,14 +203,19 @@ export default function (Alpine) {
         handle_button_timer_click(pomodoro, button_name) {
             const callback = {
                 'remove': (pomodoro) => {
-                    console.log('remove: ', pomodoro)
+                    const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
+                    if(pomodoro_stage.state === 'paused') {
+                        this.pomodoros = this.pomodoros.filter(item => item !== pomodoro)
+                    }                    
             }}[button_name]
             callback(pomodoro);
         },
         countdown(pomodoro) {
             const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
             if(pomodoro_stage.state === 'running') {
-                pomodoro[pomodoro_stage.timer_property] > 0 && pomodoro[pomodoro_stage.timer_property]--
+                pomodoro[pomodoro_stage.timer_property] === 0 
+                    ? ( pomodoro.stage = pomodoro_stage.on_countdown || pomodoro.stage )
+                    : pomodoro[pomodoro_stage.timer_property]--
             }
         },
         new_pomodoro_text: '',
