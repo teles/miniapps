@@ -1,30 +1,121 @@
+const stages = [
+    {
+        name: 'focus_paused',
+        styles: {
+            base: 'bg-gray-50 border-gray-200 text-gray-500',
+            progress_bg: 'bg-gray-100',
+            progress_bar: 'bg-gray-500',
+            timer_action: 'bg-gray-500',
+            timer: 'bg-gray-400 text-gray-100'
+        },
+        state: 'paused',
+        cycle: 'focus',
+        on_timer_click: 'focus_running',
+        button: 'remove'
+    },
+    {   
+        name: 'focus_running',            
+        styles: {
+            base: 'bg-yellow-50 border-yellow-200 text-yellow-500',
+            progress_bg: 'bg-yellow-100',
+            progress_bar: 'bg-yellow-500',
+            timer_action: 'bg-yellow-500',
+            timer: 'bg-yellow-400 text-yellow-100'
+        },
+        state: 'running',
+        cycle: 'focus',
+        on_timer_click: 'focus_paused',
+        on_timer_click_away: 'focus_paused',
+        on_countdown: 'focus_finished',
+        button: 'remove'
+    },
+    {
+        name: 'focus_finished',
+        styles: {
+            base: 'bg-blue-50 border-blue-200 text-blue-500',
+            progress_bg: 'bg-blue-100',
+            progress_bar: 'bg-blue-500',
+            timer_action: 'bg-blue-500',
+            timer: 'bg-blue-400 text-blue-100'
+        },
+        state: 'paused',
+        cycle: 'focus',
+        on_timer_click: 'breaking_running',
+        button: 'remove'
+    },
+    {
+        name: 'breaking_running',
+        styles: {
+            base: 'bg-blue-50 border-blue-200 text-blue-500',
+            progress_bg: 'bg-blue-100',
+            progress_bar: 'bg-blue-500',
+            timer_action: 'bg-blue-500',
+            timer: 'bg-blue-400 text-blue-100'
+        },
+        state: 'running',
+        cycle: 'breaking',
+        on_timer_click_away: 'breaking_paused',
+        on_timer_click: 'breaking_paused',
+        on_countdown: 'breaking_finished',
+        button: 'remove'
+    },
+    {
+        name: 'breaking_paused',
+        styles: {
+            base: 'bg-blue-50 border-blue-200 text-blue-500',
+            progress_bg: 'bg-blue-100',
+            progress_bar: 'bg-blue-500',
+            timer_action: 'bg-blue-500',
+            timer: 'bg-blue-400 text-blue-100'
+        },
+        state: 'paused',
+        cycle: 'breaking',
+        on_timer_click: 'breaking_running',
+        on_countdown: 'breaking_finished',
+        button: 'remove'
+    },
+    {
+        name: 'breaking_finished',
+        styles: {
+            base: 'bg-green-50 border-green-200 text-green-500',
+            progress_bg: 'bg-green-100',
+            progress_bar: 'bg-green-500',
+            timer_action: 'bg-green-500',
+            timer: 'bg-green-400 text-green-100'
+        },
+        state: 'paused',
+        cycle: 'breaking',
+        on_timer_click: 'breaking_finished',
+        button: 'remove'
+    },
+    {
+        name: 'archived',
+        styles: {
+            base: 'bg-green-50 border-green-200 text-green-500',
+            progress_bg: 'bg-green-100',
+            progress_bar: 'bg-green-500',
+            timer_action: 'bg-green-500',
+            timer: 'bg-green-400 text-green-100'
+        },
+        state: 'paused',
+        cycle: 'breaking',
+        on_timer_click: 'breaking_finished',
+        button: 'remove'
+    }    
+]
+
 export default function (Alpine) {
-    const seconds_pomodoro = 25 * 60
+    const seconds_focus = 25 * 60
     const seconds_breaking = 5 * 60
-    const get_mockup_pomodoro = (text, state) => ({
+    const get_mockup_pomodoro = (text, stage) => ({
         text,
-        state,
+        stage,
         is_editing: false,
-        time_left: seconds_pomodoro,
+        time_left: seconds_focus,
         breaking_left: seconds_breaking,
         started_at: new Date,
         finished_at: null
     })
-    const if_every = (options = {}) => {
-        const { list, condition, callback } = options
-        if(list.every(condition)) {
-            callback()
-        }
-    }    
-    const states = {
-        running: 'running',
-        paused: 'paused',
-        finished: 'finished',
-        breaking: 'breaking',
-        breaking_paused: 'breaking_paused',
-        breaking_finished: 'breaking_finished',
-        archived: 'archived'
-    }
 
     return {
         icons: {
@@ -33,137 +124,49 @@ export default function (Alpine) {
             check: 'M470.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L192 338.7 425.4 105.4c12.5-12.5 32.8-12.5 45.3 0z',
             trash: 'M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z',
             pause: 'M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z',
-        },        
-        states,
-        template_by_state: {
-            [states.paused]: {
-                classes: 'bg-gray-50 border-gray-200 text-gray-500',
-                timer: {
-                    property: 'time_left',
-                    icon: 'play',
-                    classes: {
-                        action: 'bg-gray-500',
-                        counter: 'bg-gray-400 text-gray-100'
-                    },
-                    update_state_to: states.running
-                },
-                progress: {
-                    bg: 'bg-gray-100',
-                    bar: 'bg-gray-500'
-                },
-                button: {
-                    name: 'remove'
-                }
-            },
-            [states.running]: {
-                classes: 'bg-yellow-50 border-yellow-200 text-yellow-500',
-                timer: {
-                    property: 'time_left',
-                    icon: 'pause',
-                    classes: {
-                        action: 'bg-yellow-500',
-                        counter: 'bg-yellow-400 text-yellow-100'
-                    },
-                    update_state_to: states.paused
-                },
-                progress: {
-                    bg: 'bg-yellow-100',
-                    bar: 'bg-yellow-500'
-                },
-                button: {
-                    name: 'remove',
-                    disabled: true                    
-                }                	
-            },
-            [states.finished]: {
-                classes: 'bg-blue-50 border-blue-200 text-blue-500',
-                timer: {
-                    property: 'breaking_left',
-                    icon: 'play',
-                    classes: {
-                        action: 'bg-blue-500',
-                        counter: 'bg-blue-400 text-blue-100'
-                    },
-                    update_state_to: states.breaking
-                },
-                progress: {
-                    bg: 'bg-blue-100',
-                    bar: 'bg-blue-500'
-                },
-                button: {
-                    name: 'save',
-                    disabled: true
-                }                		
-            },
-            [states.breaking]: {
-                classes: 'bg-blue-50 border-blue-200 text-blue-500',
-                timer: {
-                    property: 'breaking_left',
-                    icon: 'pause',
-                    classes: {
-                        action: 'bg-blue-500',
-                        counter: 'bg-blue-400 text-blue-100'
-                    },
-                    update_state_to: states.breaking_paused
-                },
-                progress: {
-                    bg: 'bg-blue-100',
-                    bar: 'bg-blue-500'
-                },
-                button: {
-                    name: 'save',
-                    disabled: true
-                }                		
-            },
-            [states.breaking_paused]: {
-                classes: 'bg-blue-50 border-blue-200 text-blue-500',
-                timer: {
-                    property: 'breaking_left',
-                    icon: 'play',
-                    classes: {
-                        action: 'bg-blue-500',
-                        counter: 'bg-blue-400 text-blue-100'
-                    },
-                    update_state_to: states.breaking
-                },
-                progress: {
-                    bg: 'bg-blue-100',
-                    bar: 'bg-blue-500'
-                },
-                button: {
-                    name: 'remove'
-                }                		
-            },
-            [states.breaking_finished]: {
-                classes: 'bg-green-50 border-green-200 text-green-500',
-                timer: {
-                    property: 'breaking_left',
-                    icon: 'pause',
-                    classes: {
-                        action: 'bg-green-500',
-                        counter: 'bg-green-400 text-green-100'
-                    },
-                    update_state_to: states.breaking
-                },
-                progress: {
-                    bg: 'bg-green-100',
-                    bar: 'bg-green-500'
-                },
-                button: {
-                    name: 'remove'
-                } 			
-            }            
-        },          
+        },
+        stages: stages.reduce((total, stage) => {      
+            const appendix = {
+                timer_icon: {
+                    'paused': 'play',
+                    'running': 'pause'                    
+                }[stage.state],
+                timer_property: {
+                    'focus': 'time_left',
+                    'breaking': 'breaking_left'
+                }[stage.cycle],
+                timer_initial: {
+                    'focus': seconds_focus,
+                    'breaking': seconds_breaking
+                }[stage.cycle],
+                button_style: {
+                    'remove': 'bg-red-500'
+                }[stage.button],
+                button_callback: {
+                    'remove': 'remove'
+                }[stage.button],
+                button_icon: {
+                    'remove': 'trash'
+                }[stage.button]                
+            }
+            stage.styles = Object.assign(stage.styles, { button: appendix.button_style })
+            total.push(Object.assign(stage, appendix))
+            return total;
+        }, []),
+        stages_map: stages.reduce((total, stage) => {
+            total[stage.name] = stage;
+            return total;
+        }, {}),        
         configs: Alpine.$persist({
             running_first: false,
             start_anytime: true
         }),
         tabs: Alpine.$persist({
-            active: 'running',
+            active: 'home',
             items: [
                 {
-                    id: 'running',
-                    label: 'Running',
+                    id: 'home',
+                    label: 'Home',
                     is_blinking: false,
                 },
                 {
@@ -180,88 +183,50 @@ export default function (Alpine) {
             ]
         }),  
         pomodoros: Alpine.$persist([
-            get_mockup_pomodoro('Buy tomatos', 'running'),
-            get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'paused'),
-            get_mockup_pomodoro('Wash dishes', 'finished')
+            get_mockup_pomodoro('Buy tomatos', 'focus_running'),
+            get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'focus_paused'),
+            get_mockup_pomodoro('Wash dishes', 'focus_finished')
         ]),
-        get archived() {
-            return this.pomodoros.filter(pomodoro => pomodoro.state === states.archived)
+        pomodoros_archived: Alpine.$persist([]),
+        get_stage_by_pomodoro(pomodoro) {
+            return stages.find(stage => stage.name === pomodoro.stage)
         },
-        get has_pomorodo_running() {
-            return this.pomodoros.filter(pomodoro => pomodoro.state === states.running).length === 1
+        handle_timer_click(pomodoro) {
+            this.pomodoros
+                .filter(item => item !== pomodoro)
+                .forEach(pomodoro => {
+                    const stage = stages.find(stage => stage.name === pomodoro.stage);
+                    pomodoro.stage = stage.on_timer_click_away || pomodoro.stage;
+            })
+            pomodoro.stage = this.get_stage_by_pomodoro(pomodoro).on_timer_click
+        },
+        handle_button_timer_click(pomodoro, button_name) {
+            const callback = {
+                'remove': (pomodoro) => {
+                    const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
+                    if(pomodoro_stage.state === 'paused') {
+                        this.pomodoros = this.pomodoros.filter(item => item !== pomodoro)
+                    }                    
+            }}[button_name]
+            callback(pomodoro);
         },
         countdown(pomodoro) {
-            if(pomodoro.state === states.running) {
-                pomodoro.time_left === 0 
-                    ? this.update_state(states.breaking, pomodoro)
-                    : pomodoro.time_left--
+            const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
+            if(pomodoro_stage.state === 'running') {
+                pomodoro[pomodoro_stage.timer_property] === 0 
+                    ? ( pomodoro.stage = pomodoro_stage.on_countdown || pomodoro.stage )
+                    : pomodoro[pomodoro_stage.timer_property]--
             }
         },
-        countdown_break_time(pomodoro) {
-            if(pomodoro.state === states.finished) {
-                pomodoro.breaking_left === 0 
-                    ? this.update_state(states.breaking, pomodoro)
-                    : pomodoro.breaking_left--
-            }
-        },        
-        update_state(to_state_name, pomodoro) {
-            const to_state = {
-                [states.paused]: {
-                    from: { state: states.running }
-                },
-                [states.running]: {
-                    from: { state: states.paused },
-                    others: {from: states.running, to: states.paused }
-                },
-                [states.finished]: {
-                    from: { state: states.running },
-                    to: { finished_at: new Date() }
-                },
-                [states.breaking]: {
-                    from: { state: states.finished }
-                },
-                [states.breaking_paused]: {
-                    from: { state: states.breaking }
-                },
-                [states.breaking_finished]: {
-                    from: { state: states.breaking }
-                },                                
-                [states.archived]: {
-                    from: { state: states.breaking }
-                }
-            }[to_state_name];
-
-            if_every({
-                list: Object.keys(to_state.from), 
-                condition: key => to_state.from[key] === pomodoro[key],
-                callback: () => {
-                    to_state.others && this.pomodoros
-                        .filter(_pomodoro => _pomodoro.state === to_state.others.from)
-                        .forEach(_pomodoro => _pomodoro.state = to_state.others.to)
-                    pomodoro = Object.assign(pomodoro, to_state.to || {}, { state: to_state_name })
-                }
-            })
-        },        
         new_pomodoro_text: '',
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
-        add() {
+        add() {          
             if (this.new_pomodoro_text.length > 0) {
-                this.pomodoros.push({
-                    text: this.new_pomodoro_text,
-                    state: states.paused,
-                    time_left: 25 * 60,
-                    breaking_left: 5 * 60,
-                    is_editing: false,
-                    started_at: new Date,
-                    finished_at: null
-                })
+                this.pomodoros.push(
+                    get_mockup_pomodoro(this.new_pomodoro_text, 'focus_paused')
+                )
             }
             this.new_pomodoro_text = '';
-        },
-        remove(pomodoro) {
-            if (pomodoro.state !== states.running) {
-                this.pomodoros = this.pomodoros.filter(pomodoro_item => pomodoro_item !== pomodoro)
-            }
         }
     }
 }
