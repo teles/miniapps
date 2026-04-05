@@ -13,14 +13,36 @@
     x-data="emojiRemover"
     class="miniapp-shell-bg"
     x-cloak>
-    <main class="miniapp-shell-card">
-
-      <!-- Header -->
-      <header class="mb-3 shrink-0">
-        <h1 class="text-3xl font-medium text-[#100F0F] flex items-center gap-2">
-          😭 Emoji Remover
-        </h1>
-      </header>
+    <main class="miniapp-shell-card" data-miniapp-window data-miniapp-close-href="/">
+      <div class="miniapp-window-bar" data-miniapp-window-handle>
+        <div class="miniapp-window-controls" role="group" aria-label="Window controls">
+          <button
+            type="button"
+            class="miniapp-window-control miniapp-window-control--close ds-tooltip"
+            data-miniapp-window-action="close"
+            data-tooltip="Close miniapp"
+            aria-label="Close miniapp">
+          </button>
+          <button
+            type="button"
+            class="miniapp-window-control miniapp-window-control--minimize ds-tooltip"
+            data-miniapp-window-action="minimize"
+            data-tooltip="Minimize window"
+            aria-label="Minimize window"
+            aria-pressed="false">
+          </button>
+          <button
+            type="button"
+            class="miniapp-window-control miniapp-window-control--maximize ds-tooltip"
+            data-miniapp-window-action="maximize"
+            data-tooltip="Maximize window"
+            aria-label="Maximize window"
+            aria-pressed="false">
+          </button>
+        </div>
+        <h1 class="miniapp-window-title">😭 Emoji Remover</h1>
+        <span class="miniapp-window-spacer" aria-hidden="true"></span>
+      </div>
 
       <!-- Steps -->
       <nav :class="ds.steps.nav" aria-label="Emoji remover steps">

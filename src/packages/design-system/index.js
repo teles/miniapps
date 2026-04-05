@@ -11,6 +11,7 @@ export {
     MODAL_CLASSES,
     TOOLTIP_CLASSES,
     initializeTooltips,
+    initializeMiniappWindows,
     createTabsState,
     getStepState,
     createModalState,
