@@ -7,7 +7,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         home: fileURLToPath(new URL('./src/index.html', import.meta.url)),
-        dailyPomodoro: fileURLToPath(new URL('./src/miniapps/daily-pomodoro/index.html', import.meta.url))
+        dailyPomodoro: fileURLToPath(new URL('./src/miniapps/daily-pomodoro/index.html', import.meta.url)),
+        emojiRemover: fileURLToPath(new URL('./src/miniapps/emoji-remover/index.html', import.meta.url))
       }
     },
     outDir: '../dist',
