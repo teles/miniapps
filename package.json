@@ -2,11 +2,14 @@
   "name": "minitools",
   "version": "1.0.0",
   "type": "module",
-  "main": "src/js/pomodoro.js",
+  "main": "src/miniapps/daily-pomodoro/main.js",
   "license": "MIT",
   "devDependencies": {
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/html-vite": "^8.6.14",
     "postcss": "^8.4.21",
     "postcss-preset-env": "^8.1.0",
+    "storybook": "^8.6.14",
     "vite": "^5.4.0",
     "vitest": "^2.1.0"
   },
@@ -15,6 +18,8 @@
     "build": "vite build",
     "start": "vite --open",
     "preview": "vite preview",
+    "storybook": "HOME=.storybook-home STORYBOOK_DISABLE_TELEMETRY=1 storybook dev -p 6006",
+    "storybook:build": "HOME=.storybook-home STORYBOOK_DISABLE_TELEMETRY=1 storybook build",
     "test": "vitest run",
     "test:watch": "vitest"
   },
