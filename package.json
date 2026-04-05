@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "main": "src/miniapps/daily-pomodoro/main.js",
+  "engines": {
+    "node": ">=22 <23"
+  },
   "license": "MIT",
   "devDependencies": {
     "@storybook/addon-essentials": "^8.6.14",
