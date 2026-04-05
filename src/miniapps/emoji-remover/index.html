@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>😭 Emoji Remover</title>
+  </head>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+  <body
+    x-data="emojiRemover"
+    class="miniapp-shell-bg"
+    x-cloak>
+    <main class="miniapp-shell-card">
+
+      <!-- Header -->
+      <header class="mb-3 shrink-0">
+        <h1 class="text-3xl font-medium text-[#100F0F] flex items-center gap-2">
+          😭 Emoji Remover
+        </h1>
+      </header>
+
+      <!-- Steps -->
+      <nav :class="ds.steps.nav" aria-label="Emoji remover steps">
+        <ol :class="ds.steps.list">
+          <template x-for="step in steps" :key="step.id">
+            <li :class="ds.steps.item">
+              <button
+                type="button"
+                :class="ds.steps.trigger + ' ' + (canGoToStep(step.id) ? ds.steps.trigger_enabled : ds.steps.trigger_disabled)"
+                :disabled="!canGoToStep(step.id)"
+                @click="goToStep(step.id)">
+                <span
+                  :class="stepIndicatorClass(step.id)"
+                  x-text="stepState(step.id) === 'complete' ? '✓' : step.id">
+                </span>
+                <span
+                  :class="stepLabelClass(step.id)"
+                  x-text="step.label">
+                </span>
+              </button>
+              <span
+                x-show="step.id < steps.length"
+                :class="stepConnectorClass(step.id)">
+              </span>
+            </li>
+          </template>
+        </ol>
+      </nav>
+
+      <p class="text-xs text-[#6F6E69] mb-3" x-text="current_step_title"></p>
+
+      <section class="miniapp-shell-content min-h-0 overflow-y-auto">
+
+        <!-- Step 1: Paste -->
+        <section
+          x-show="current_step === 1"
+          x-transition.opacity
+          class="flex flex-col gap-3 h-full min-h-0">
+          <div class="shrink-0">
+            <label class="block text-xs font-semibold text-[#6F6E69] uppercase tracking-wide mb-1">
+              Paste your text
+            </label>
+            <textarea
+              x-model="input_text"
+              @input="on_input_change()"
+              class="w-full h-40 p-3 border border-[#CECDC3] rounded-md text-sm resize-none focus:ring-2 focus:ring-[#4385BE] focus:outline-none font-mono"
+              placeholder="Paste text with emojis here…">
+            </textarea>
+          </div>
+
+          <p
+            class="text-xs text-[#6F6E69]"
+            x-show="has_text">
+            <strong class="font-semibold text-[#205EA6]" x-text="found_count"></strong>
+            emojis found in your input.
+          </p>
+
+        </section>
+
+        <!-- Step 2: Choose -->
+        <section
+          x-show="current_step === 2"
+          x-transition.opacity
+          class="flex flex-col gap-3 h-full min-h-0 overflow-y-auto">
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 shrink-0">
+            <button
+              @click="setMode('all')"
+              :class="'rounded-md border p-3 text-left transition-all ' + (mode === 'all'
+                ? 'border-[#205EA6] bg-[#F2F0E5] ring-1 ring-[#4385BE]'
+                : 'border-[#CECDC3] bg-[#FFFCF0] hover:border-[#4385BE]')">
+              <p class="text-sm font-semibold text-[#282726]">Remove all emojis</p>
+              <p class="text-xs text-[#6F6E69] mt-1">Fast and automatic cleanup.</p>
+            </button>
+
+            <button
+              @click="setMode('selected')"
+              :class="'rounded-md border p-3 text-left transition-all ' + (mode === 'selected'
+                ? 'border-[#205EA6] bg-[#F2F0E5] ring-1 ring-[#4385BE]'
+                : 'border-[#CECDC3] bg-[#FFFCF0] hover:border-[#4385BE]')">
+              <p class="text-sm font-semibold text-[#282726]">Select specific emojis</p>
+              <p class="text-xs text-[#6F6E69] mt-1">Choose exactly what to remove.</p>
+            </button>
+          </div>
+
+          <p class="text-xs text-[#6F6E69]" x-text="mode_helper_label"></p>
+
+          <div
+            x-show="is_select_mode && found_emojis.length > 0"
+            x-transition
+            class="shrink-0 border border-[#4385BE] rounded-lg p-3 bg-[#F2F0E5] space-y-2">
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-[#205EA6] uppercase tracking-wide">
+                Select emojis to remove
+              </p>
+              <div class="flex gap-3 text-xs text-[#205EA6]">
+                <button class="hover:text-[#4385BE] font-medium" @click="selectAllEmojis()">All</button>
+                <button class="hover:text-[#4385BE] font-medium" @click="deselectAllEmojis()">None</button>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <template x-for="emoji in found_emojis" :key="emoji">
+                <button
+                  @click="toggleEmoji(emoji)"
+                  :class="'text-lg px-1.5 py-0.5 rounded-md border transition-all select-none ' + (selected_emojis.includes(emoji)
+                    ? 'bg-[#FFE1D5] border-[#D14D41] ring-1 ring-[#E8705F]'
+                    : 'bg-[#FFFCF0] border-[#CECDC3] hover:border-[#4385BE]')">
+                  <span x-text="emoji"></span>
+                </button>
+              </template>
+            </div>
+            <p class="text-xs text-[#6F6E69]">
+              <strong x-text="selected_emojis.length"></strong>
+              selected
+            </p>
+          </div>
+
+          <div
+            x-show="is_select_mode && found_emojis.length === 0"
+            class="text-xs text-[#6F6E69] border border-[#CECDC3] rounded-md p-2 bg-[#F2F0E5]">
+            No emojis found to select. Go back and paste text with emojis.
+          </div>
+
+          <div class="shrink-0">
+            <label class="flex items-center justify-between text-xs font-semibold text-[#6F6E69] uppercase tracking-wide mb-1">
+              <span>Preview</span>
+              <span
+                class="normal-case font-normal text-[#66800B] font-medium"
+                x-show="preview_removed_count > 0"
+                x-text="'✓ ' + preview_removed_count + ' emoji' + (preview_removed_count !== 1 ? 's' : '') + ' will be removed'">
+              </span>
+              <span
+                class="normal-case font-normal text-[#878580]"
+                x-show="preview_removed_count === 0">
+                Nothing to remove
+              </span>
+            </label>
+            <textarea
+              readonly
+              :value="preview_output"
+              class="w-full h-24 p-3 border border-[#CECDC3] rounded-md text-sm resize-none bg-[#F2F0E5] font-mono focus:outline-none text-[#575653]">
+            </textarea>
+          </div>
+
+        </section>
+
+        <!-- Step 3: Export -->
+        <section
+          x-show="current_step === 3"
+          x-transition.opacity
+          class="flex flex-col gap-3 h-full min-h-0 overflow-y-auto">
+
+          <div class="rounded-md border border-[#879A39] bg-[#F2F0E5] px-3 py-2 text-sm text-[#66800B]">
+            <strong x-text="removed_in_output"></strong>
+            emoji<span x-show="removed_in_output !== 1">s</span>
+            removed from this output.
+          </div>
+
+          <div class="shrink-0">
+            <label class="block text-xs font-semibold text-[#6F6E69] uppercase tracking-wide mb-1">
+              Cleaned text
+            </label>
+            <textarea
+              readonly
+              :value="output_text"
+              class="w-full h-32 p-3 border border-[#CECDC3] rounded-md text-sm resize-none bg-[#F2F0E5] font-mono focus:outline-none text-[#575653]">
+            </textarea>
+          </div>
+
+        </section>
+
+      </section>
+
+      <footer class="shrink-0 mt-3 pt-3 border-t border-[#DAD8CE]">
+        <!-- Step 1 actions -->
+        <div
+          x-show="current_step === 1"
+          class="flex items-center gap-2">
+          <button
+            :class="ds.button.primary + (!can_advance_step_2 ? ' ' + ds.button.disabled : '')"
+            @click="nextFromInput()"
+            :disabled="!can_advance_step_2">
+            Continue
+          </button>
+          <button
+            class="text-sm text-[#878580] hover:text-[#575653] transition-colors"
+            x-show="has_text"
+            @click="clearAll()">
+            Clear
+          </button>
+        </div>
+
+        <!-- Step 2 actions -->
+        <div
+          x-show="current_step === 2"
+          class="flex items-center gap-2">
+          <button
+            :class="ds.button.outline"
+            @click="backToInput()">
+            Back
+          </button>
+          <button
+            :class="ds.button.success + (!can_generate_output ? ' ' + ds.button.disabled : '')"
+            @click="generateOutput()"
+            :disabled="!can_generate_output">
+            Generate Clean Text
+          </button>
+        </div>
+
+        <!-- Step 3 actions -->
+        <div
+          x-show="current_step === 3"
+          class="flex items-center gap-2 flex-wrap">
+          <button
+            :class="ds.button.success"
+            @click="copyText()">
+            <span class="inline-flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 448 512" aria-hidden="true">
+                <path :d="ds.icons.copy"/>
+              </svg>
+              <span x-text="copy_label"></span>
+            </span>
+          </button>
+
+          <div :class="ds.download.container" class="ml-auto">
+            <label for="download-format" class="sr-only">Download format</label>
+            <button
+              :class="ds.download.button"
+              @click="downloadOutput()">
+              Download
+            </button>
+            <div :class="ds.download.select_wrap">
+              <select
+                id="download-format"
+                x-model="download_format"
+                :class="ds.download.select">
+                <template x-for="item in download_formats" :key="item.value">
+                  <option :value="item.value" x-text="item.label"></option>
+                </template>
+              </select>
+              <svg :class="ds.download.chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" :d="ds.icons.chevron_down" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+    <script type="module" src="/miniapps/emoji-remover/main.js"></script>
+  </body>
+</html>
