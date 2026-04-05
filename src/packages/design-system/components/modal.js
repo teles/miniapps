@@ -2,10 +2,10 @@ export const MODAL_CLASSES = {
     container: 'flex fixed inset-0 z-50 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] md:h-full',
     backdrop: 'bg-black/70 inset-o absolute w-full h-full cursor-pointer',
     panel_wrap: 'relative w-full h-full max-w-md md:h-auto m-auto',
-    panel: 'relative bg-white rounded-lg shadow',
-    close_button: 'absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center',
+    panel: 'relative bg-[#FFFCF0] border border-[#CECDC3] rounded-lg shadow',
+    close_button: 'absolute top-3 right-2.5 text-[#878580] bg-transparent hover:bg-[#F2F0E5] hover:text-[#100F0F] rounded-lg text-sm p-1.5 ml-auto inline-flex items-center',
     content: 'p-6 text-center',
-    title: 'mb-5 text-lg font-normal text-gray-500'
+    title: 'mb-5 text-lg font-normal text-[#6F6E69]'
 }
 
 const defaultModalState = {

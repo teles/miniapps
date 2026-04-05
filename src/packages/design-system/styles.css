@@ -1,10 +1,11 @@
 :root {
-  --ds-bg-start: #3b82f6;
-  --ds-bg-end: #6366f1;
-  --ds-surface: #ffffff;
-  --ds-text-primary: #111827;
-  --ds-text-muted: #9ca3af;
-  --ds-primary: #4f46e5;
+  --ds-bg-start: #4385be;
+  --ds-bg-end: #8b7ec8;
+  --ds-surface: #fffcf0;
+  --ds-border: #cecdc3;
+  --ds-text-primary: #100f0f;
+  --ds-text-muted: #6f6e69;
+  --ds-primary: #205ea6;
 }
 
 .miniapp-shell-bg {
@@ -24,12 +25,21 @@
   margin: 1rem;
   padding: 2rem;
   background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
   border-radius: 0.25rem;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow: 0 12px 22px -10px rgb(16 15 15 / 0.28), 0 4px 8px -4px rgb(16 15 15 / 0.18);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Use on apps that need flexible height instead of fixed 500px */
+.miniapp-shell-card--auto {
+  height: auto;
+  min-height: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .miniapp-shell-content {
@@ -50,11 +60,11 @@
   pointer-events: none;
   transform: translateY(2px);
   transition: opacity 0.12s ease, transform 0.12s ease;
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #282726;
+  color: #f2f0e5;
   padding: 0.35rem 0.45rem;
   border-radius: 0.35rem;
-  box-shadow: 0 8px 16px rgb(2 6 23 / 0.4);
+  box-shadow: 0 8px 16px rgb(16 15 15 / 0.35);
   white-space: nowrap;
   font-size: 0.68rem;
   line-height: 1;
@@ -70,13 +80,13 @@
   bottom: calc(100% + 6px);
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid #0f172a;
+  border-top: 5px solid #282726;
 }
 
 .ds-tooltip-floating[data-placement='top']::after {
   top: 100%;
   bottom: auto;
-  border-top-color: #0f172a;
+  border-top-color: #282726;
   border-bottom: 0;
 }
 
@@ -84,7 +94,7 @@
   top: -5px;
   bottom: auto;
   border-top-color: transparent;
-  border-bottom: 5px solid #0f172a;
+  border-bottom: 5px solid #282726;
 }
 
 .ds-tooltip-floating.is-visible {

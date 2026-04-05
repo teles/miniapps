@@ -1,31 +1,29 @@
 export const TABS_CLASSES = {
-    header: 'text-sm font-medium text-center text-gray-500 border-b border-gray-200',
+    header: 'text-sm font-medium text-center text-[#6F6E69] border-b border-[#CECDC3]',
     list: 'flex flex-wrap -mb-px',
     item: 'mr-2 flex',
     trigger: 'inline-block p-4 border-b-2 rounded-t-lg cursor-pointer',
-    active: 'text-blue-600 border-blue-600 active',
-    inactive: 'border-transparent hover:text-gray-600 hover:border-gray-300'
+    active: 'text-[#205EA6] border-[#205EA6] active',
+    inactive: 'border-transparent hover:text-[#575653] hover:border-[#B7B5AC]'
 }
 
-export function createTabsState(Alpine, { defaultTab, tabItems, persist = true }) {
-    if (!persist) {
+export function createTabsState(Alpine, { defaultTab, tabItems, persist = true, key }) {
+    if (!persist || typeof Alpine?.$persist !== 'function') {
         return {
             active: defaultTab,
             items: tabItems
         }
     }
 
-    const state = Alpine.$persist({
-        active: defaultTab
-    })
+    // Persist only the active tab ID (a string) — never persist the items array.
+    // Alpine's initInterceptors processes `active` in-place, replacing the interceptor
+    // with the persisted string value while leaving `items` untouched.
+    const persistedActive = Alpine.$persist(defaultTab).as(key + '_active_tab')
 
-    state.items = tabItems
-
-    if (!tabItems.some((tab) => tab.id === state.active)) {
-        state.active = defaultTab
+    return {
+        active: persistedActive,
+        items: tabItems
     }
-
-    return state
 }
 
 export default TABS_CLASSES
