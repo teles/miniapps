@@ -3,21 +3,22 @@ import {
     MODAL_CLASSES,
     TABS_CLASSES,
     TOOLTIP_CLASSES,
-    createMiniappShell
+    createMicroappShell
 } from '../../packages/design-system/index.js'
 import createPomodoroSharedContext from './shared-context.js'
 import createPomodoroTabs from './tabs/index.js'
 
 export default function (Alpine) {
     const tabControllers = createPomodoroTabs()
+    const persistAdapter = { persist: (v) => Alpine.$persist(v) }
 
     return {
-        shell: createMiniappShell(Alpine, {
+        shell: createMicroappShell(Alpine, {
             defaultTab: 'home',
             tabItems: tabControllers.items,
             key: 'pomodoro'
         }),
-        shared: createPomodoroSharedContext(Alpine),
+        shared: createPomodoroSharedContext(persistAdapter),
         design_system: {
             button: BUTTON_CLASSES,
             tabs: TABS_CLASSES,

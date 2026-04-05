@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import pomodoroCore from './app.js'
+import { transitionPomodoro } from './shared-context.js'
 
+// AlpineMocked is still needed for createMicroappShell (tabs persist via Alpine.$persist).
+// shared-context.js itself no longer receives Alpine — it gets a plain persistAdapter.
 const makePersistedValue = (value) => {
     if (typeof value !== 'object' || value === null) {
         return { as: () => value }
@@ -14,6 +17,53 @@ const makePersistedValue = (value) => {
 const AlpineMocked = {
     $persist: makePersistedValue
 }
+
+describe('transitionPomodoro (pure function)', () => {
+    const stagesMap = {
+        focus_paused: { state: 'paused' },
+        focus_running: { state: 'running' },
+        focus_finished: { state: 'paused' },
+        breaking_running: { state: 'running' },
+        breaking_paused: { state: 'paused' },
+        breaking_finished: { state: 'paused' },
+        done: { state: 'done' },
+        archived: { state: 'paused' }
+    }
+
+    it('returns a new object without mutating the original', () => {
+        const original = { id: '1', stage: 'focus_paused', state: 'paused', text: 'Task' }
+        const result = transitionPomodoro(original, 'focus_running', stagesMap)
+
+        expect(result).not.toBe(original)
+        expect(original.stage).toBe('focus_paused')
+        expect(original.state).toBe('paused')
+    })
+
+    it('sets the correct stage and state from the stagesMap', () => {
+        const pomodoro = { id: '1', stage: 'focus_paused', state: 'paused', text: 'Task' }
+        const result = transitionPomodoro(pomodoro, 'focus_running', stagesMap)
+
+        expect(result.stage).toBe('focus_running')
+        expect(result.state).toBe('running')
+    })
+
+    it('preserves all other pomodoro fields', () => {
+        const pomodoro = { id: '42', stage: 'focus_paused', state: 'paused', text: 'Preserved', time_left: 1200 }
+        const result = transitionPomodoro(pomodoro, 'focus_finished', stagesMap)
+
+        expect(result.id).toBe('42')
+        expect(result.text).toBe('Preserved')
+        expect(result.time_left).toBe(1200)
+    })
+
+    it('falls back to paused state when stageName is unknown', () => {
+        const pomodoro = { id: '1', stage: 'focus_paused', state: 'paused' }
+        const result = transitionPomodoro(pomodoro, 'nonexistent_stage', stagesMap)
+
+        expect(result.stage).toBe('nonexistent_stage')
+        expect(result.state).toBe('paused')
+    })
+})
 
 describe('pomodoro core', () => {
     it('should expose home, archived, done and configs tabs', () => {

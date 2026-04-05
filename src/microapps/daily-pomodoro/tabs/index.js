@@ -109,7 +109,6 @@ function createHomeTab() {
                 const runningStageName = currentStage.cycle === 'focus' ? 'focus_running' : 'breaking_running'
                 app.shared.pause_other_running_pomodoros(pomodoro)
                 app.shared.transition_pomodoro(pomodoro, runningStageName)
-                pomodoro.state = 'running'
                 return
             }
 
@@ -119,7 +118,6 @@ function createHomeTab() {
                 }
                 const pausedStageName = currentStage.cycle === 'focus' ? 'focus_paused' : 'breaking_paused'
                 app.shared.transition_pomodoro(pomodoro, pausedStageName)
-                pomodoro.state = 'paused'
                 return
             }
 
@@ -129,7 +127,6 @@ function createHomeTab() {
                 }
                 const finishedStageName = currentStage.cycle === 'focus' ? 'focus_finished' : 'breaking_finished'
                 app.shared.transition_pomodoro(pomodoro, finishedStageName)
-                pomodoro.state = 'finished'
             }
         }
     }

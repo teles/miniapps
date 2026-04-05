@@ -8,7 +8,7 @@
   --ds-primary: #205ea6;
 }
 
-.miniapp-shell-bg {
+.microapp-shell-bg {
   width: 100%;
   min-width: 100%;
   min-height: 100vh;
@@ -18,13 +18,13 @@
   background: linear-gradient(to top, var(--ds-bg-start), var(--ds-bg-end));
 }
 
-.miniapp-shell-card {
-  --miniapp-card-padding: 2rem;
+.microapp-shell-card {
+  --microapp-card-padding: 2rem;
   width: 100%;
   max-width: min(450px, calc(100vw - 1.5rem));
   height: min(500px, calc(100vh - 1.5rem));
   margin: 1rem;
-  padding: var(--miniapp-card-padding);
+  padding: var(--microapp-card-padding);
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
   border-radius: 0.25rem;
@@ -37,34 +37,34 @@
 }
 
 /* Use on apps that need flexible height instead of fixed 500px */
-.miniapp-shell-card--auto {
+.microapp-shell-card--auto {
   height: auto;
   min-height: 500px;
   max-height: calc(100vh - 1.5rem);
   overflow-y: auto;
 }
 
-.miniapp-shell-card.is-floating {
+.microapp-shell-card.is-floating {
   z-index: 20;
 }
 
-.miniapp-shell-card.is-maximized {
+.microapp-shell-card.is-maximized {
   max-width: none;
   max-height: none;
 }
 
-.miniapp-shell-card.is-minimized {
+.microapp-shell-card.is-minimized {
   height: auto !important;
   min-height: 0 !important;
   max-height: none;
 }
 
-.miniapp-shell-card.is-minimized > :not(.miniapp-window-bar) {
+.microapp-shell-card.is-minimized > :not(.microapp-window-bar) {
   display: none !important;
 }
 
-.miniapp-window-bar {
-  margin: calc(var(--miniapp-card-padding) * -1) calc(var(--miniapp-card-padding) * -1) 1rem;
+.microapp-window-bar {
+  margin: calc(var(--microapp-card-padding) * -1) calc(var(--microapp-card-padding) * -1) 1rem;
   padding: 0.62rem 0.95rem;
   border-bottom: 1px solid var(--ds-border);
   background: linear-gradient(180deg, #f8f5ea 0%, #f2f0e5 100%);
@@ -76,18 +76,18 @@
   touch-action: none;
 }
 
-.miniapp-window-bar:active {
+.microapp-window-bar:active {
   cursor: grabbing;
 }
 
-.miniapp-window-controls {
+.microapp-window-controls {
   display: inline-flex;
   align-items: center;
   gap: 0.42rem;
   min-width: 52px;
 }
 
-.miniapp-window-control {
+.microapp-window-control {
   width: 13px;
   height: 13px;
   border-radius: 999px;
@@ -102,7 +102,7 @@
   line-height: 1;
 }
 
-.miniapp-window-control::after {
+.microapp-window-control::after {
   font-size: 9px;
   font-weight: 700;
   color: rgb(16 15 15 / 0.75);
@@ -110,47 +110,47 @@
   transition: opacity 0.15s ease;
 }
 
-.miniapp-window-bar:hover .miniapp-window-control::after,
-.miniapp-window-control:focus-visible::after {
+.microapp-window-bar:hover .microapp-window-control::after,
+.microapp-window-control:focus-visible::after {
   opacity: 1;
 }
 
-.miniapp-window-control--close {
+.microapp-window-control--close {
   background: #d14d41;
   border-color: #af3029;
 }
 
-.miniapp-window-control--close::after {
+.microapp-window-control--close::after {
   content: '\00D7';
   transform: translateY(-0.4px);
 }
 
-.miniapp-window-control--minimize {
+.microapp-window-control--minimize {
   background: #d0a215;
   border-color: #ad8301;
 }
 
-.miniapp-window-control--minimize::after {
+.microapp-window-control--minimize::after {
   content: '\2212';
   transform: translateY(-1.2px);
 }
 
-.miniapp-window-control--maximize {
+.microapp-window-control--maximize {
   background: #879a39;
   border-color: #66800b;
 }
 
-.miniapp-window-control--maximize::after {
+.microapp-window-control--maximize::after {
   content: '\2b';
   transform: translateY(-0.8px);
 }
 
-.miniapp-window-control:focus-visible {
+.microapp-window-control:focus-visible {
   outline: 2px solid var(--ds-primary);
   outline-offset: 1px;
 }
 
-.miniapp-window-title {
+.microapp-window-title {
   flex: 1;
   text-align: center;
   font-size: 0.7rem;
@@ -162,16 +162,16 @@
   pointer-events: none;
 }
 
-.miniapp-window-spacer {
+.microapp-window-spacer {
   min-width: 52px;
 }
 
-body.miniapp-window-dragging {
+body.microapp-window-dragging {
   user-select: none;
   cursor: grabbing;
 }
 
-.miniapp-shell-content {
+.microapp-shell-content {
   flex: 1;
   min-height: 0;
   display: flex;

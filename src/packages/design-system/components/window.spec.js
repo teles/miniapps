@@ -230,23 +230,23 @@ const createWindowMock = ({ innerWidth = 900, innerHeight = 700 } = {}) => {
 
 const buildWindowCard = (document, { closeHref = '/' } = {}) => {
     const card = new FakeElement('main')
-    card.setAttribute('data-miniapp-window', '')
-    card.setAttribute('data-miniapp-close-href', closeHref)
+    card.setAttribute('data-microapp-window', '')
+    card.setAttribute('data-microapp-close-href', closeHref)
     card.setRect({ left: 120, top: 80, width: 450, height: 500 })
 
     const bar = new FakeElement('div')
-    bar.setAttribute('data-miniapp-window-handle', '')
+    bar.setAttribute('data-microapp-window-handle', '')
 
     const controls = new FakeElement('div')
 
     const closeButton = new FakeElement('button')
-    closeButton.setAttribute('data-miniapp-window-action', 'close')
+    closeButton.setAttribute('data-microapp-window-action', 'close')
 
     const minimizeButton = new FakeElement('button')
-    minimizeButton.setAttribute('data-miniapp-window-action', 'minimize')
+    minimizeButton.setAttribute('data-microapp-window-action', 'minimize')
 
     const maximizeButton = new FakeElement('button')
-    maximizeButton.setAttribute('data-miniapp-window-action', 'maximize')
+    maximizeButton.setAttribute('data-microapp-window-action', 'maximize')
 
     controls.appendChild(closeButton)
     controls.appendChild(minimizeButton)
@@ -272,7 +272,7 @@ const loadWindowModule = async () => {
     return import('./window.js')
 }
 
-describe('initializeMiniappWindows', () => {
+describe('initializeMicroappWindows', () => {
     beforeEach(() => {
         vi.unstubAllGlobals()
     })
@@ -286,8 +286,8 @@ describe('initializeMiniappWindows', () => {
         vi.stubGlobal('window', windowMock)
         vi.stubGlobal('Element', FakeElement)
 
-        const { initializeMiniappWindows } = await loadWindowModule()
-        initializeMiniappWindows()
+        const { initializeMicroappWindows } = await loadWindowModule()
+        initializeMicroappWindows()
 
         bar.dispatchEvent({
             type: 'pointerdown',
@@ -310,7 +310,7 @@ describe('initializeMiniappWindows', () => {
         expect(card.classList.contains('is-floating')).toBe(true)
         expect(card.style.left).toBe('438px')
         expect(card.style.top).toBe('188px')
-        expect(document.body.classList.contains('miniapp-window-dragging')).toBe(true)
+        expect(document.body.classList.contains('microapp-window-dragging')).toBe(true)
 
         bar.dispatchEvent({
             type: 'pointerup',
@@ -318,7 +318,7 @@ describe('initializeMiniappWindows', () => {
             target: bar
         })
 
-        expect(document.body.classList.contains('miniapp-window-dragging')).toBe(false)
+        expect(document.body.classList.contains('microapp-window-dragging')).toBe(false)
     })
 
     it('toggles minimized state through yellow control', async () => {
@@ -330,8 +330,8 @@ describe('initializeMiniappWindows', () => {
         vi.stubGlobal('window', windowMock)
         vi.stubGlobal('Element', FakeElement)
 
-        const { initializeMiniappWindows } = await loadWindowModule()
-        initializeMiniappWindows()
+        const { initializeMicroappWindows } = await loadWindowModule()
+        initializeMicroappWindows()
 
         card.dispatchEvent({ type: 'click', target: minimizeButton })
         expect(card.classList.contains('is-minimized')).toBe(true)
@@ -351,8 +351,8 @@ describe('initializeMiniappWindows', () => {
         vi.stubGlobal('window', windowMock)
         vi.stubGlobal('Element', FakeElement)
 
-        const { initializeMiniappWindows } = await loadWindowModule()
-        initializeMiniappWindows()
+        const { initializeMicroappWindows } = await loadWindowModule()
+        initializeMicroappWindows()
 
         card.dispatchEvent({ type: 'click', target: maximizeButton })
         expect(card.classList.contains('is-maximized')).toBe(true)
@@ -388,8 +388,8 @@ describe('initializeMiniappWindows', () => {
         vi.stubGlobal('window', windowMock)
         vi.stubGlobal('Element', FakeElement)
 
-        const { initializeMiniappWindows } = await loadWindowModule()
-        initializeMiniappWindows()
+        const { initializeMicroappWindows } = await loadWindowModule()
+        initializeMicroappWindows()
 
         card.dispatchEvent({ type: 'click', target: closeButton })
         expect(windowMock.locationAssign).toHaveBeenCalledWith('/launcher')

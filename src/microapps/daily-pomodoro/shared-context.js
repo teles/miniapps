@@ -159,7 +159,25 @@ const createStages = () => stageDefinitions.map((definition) => {
 
 let _pomodoroIdCounter = 0
 
-export default function createPomodoroSharedContext(Alpine) {
+/**
+ * Pure function: computes the next pomodoro state without side-effects.
+ * Testable without Alpine — no framework dependency.
+ */
+export function transitionPomodoro(pomodoro, nextStageName, stagesMap) {
+    const stage = stagesMap[nextStageName]
+    return {
+        ...pomodoro,
+        stage: nextStageName,
+        state: stage ? stage.state : 'paused'
+    }
+}
+
+/**
+ * @param {{ persist(defaultValue: unknown): unknown }} persistAdapter
+ *   Production: `{ persist: (v) => Alpine.$persist(v) }`
+ *   Tests:      `{ persist: (v) => v }`
+ */
+export default function createPomodoroSharedContext(persistAdapter) {
     const stages = createStages()
     const stagesMap = stages.reduce((total, stage) => {
         total[stage.name] = stage
@@ -202,22 +220,22 @@ export default function createPomodoroSharedContext(Alpine) {
         theme_colors: DESIGN_SYSTEM_COLORS,
         stages,
         stages_map: stagesMap,
-        configs: Alpine.$persist({
+        configs: persistAdapter.persist({
             running_first: false,
             start_anytime: true
         }),
-        daily_count: Alpine.$persist({
+        daily_count: persistAdapter.persist({
             date: todayKey(),
             count: 0
         }),
         modal: createModalState(),
-        pomodoros: Alpine.$persist([
+        pomodoros: persistAdapter.persist([
             buildPomodoro('Buy tomatos', 'focus_paused'),
             buildPomodoro('Defeat Thanos and save the entire universe', 'focus_paused'),
             buildPomodoro('Wash dishes', 'focus_paused')
         ]),
-        pomodoros_archived: Alpine.$persist([]),
-        pomodoros_done: Alpine.$persist([]),
+        pomodoros_archived: persistAdapter.persist([]),
+        pomodoros_done: persistAdapter.persist([]),
         _intervals: [],
         new_pomodoro_placeholder: 'Something you can do in a pomodoro',
         get_stage_by_pomodoro(pomodoro) {
@@ -230,8 +248,7 @@ export default function createPomodoroSharedContext(Alpine) {
             return buildPomodoro(text, stageName)
         },
         transition_pomodoro(pomodoro, nextStageName) {
-            pomodoro.stage = nextStageName
-            pomodoro.state = getStageState(nextStageName)
+            Object.assign(pomodoro, transitionPomodoro(pomodoro, nextStageName, this.stages_map))
         },
         pause_other_running_pomodoros(activePomodoro) {
             this.pomodoros

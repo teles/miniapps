@@ -11,42 +11,42 @@
   </style>
   <body 
     x-data="pomodoro" 
-    class="miniapp-shell-bg"
+    class="microapp-shell-bg"
     x-cloak>
-    <main class="miniapp-shell-card" data-miniapp-window data-miniapp-close-href="/">
-      <div class="miniapp-window-bar" data-miniapp-window-handle>
-        <div class="miniapp-window-controls" role="group" aria-label="Window controls">
+    <main class="microapp-shell-card" data-microapp-window data-microapp-close-href="/">
+      <div class="microapp-window-bar" data-microapp-window-handle>
+        <div class="microapp-window-controls" role="group" aria-label="Window controls">
           <button
             type="button"
-            class="miniapp-window-control miniapp-window-control--close ds-tooltip"
-            data-miniapp-window-action="close"
-            data-tooltip="Close miniapp"
-            aria-label="Close miniapp">
+            class="microapp-window-control microapp-window-control--close ds-tooltip"
+            data-microapp-window-action="close"
+            data-tooltip="Close microapp"
+            aria-label="Close microapp">
           </button>
           <button
             type="button"
-            class="miniapp-window-control miniapp-window-control--minimize ds-tooltip"
-            data-miniapp-window-action="minimize"
+            class="microapp-window-control microapp-window-control--minimize ds-tooltip"
+            data-microapp-window-action="minimize"
             data-tooltip="Minimize window"
             aria-label="Minimize window"
             aria-pressed="false">
           </button>
           <button
             type="button"
-            class="miniapp-window-control miniapp-window-control--maximize ds-tooltip"
-            data-miniapp-window-action="maximize"
+            class="microapp-window-control microapp-window-control--maximize ds-tooltip"
+            data-microapp-window-action="maximize"
             data-tooltip="Maximize window"
             aria-label="Maximize window"
             aria-pressed="false">
           </button>
         </div>
-        <h1 class="miniapp-window-title">🍅 Daily Pomodoros</h1>
-        <span class="miniapp-window-spacer" aria-hidden="true"></span>
+        <h1 class="microapp-window-title">🍅 Daily Pomodoros</h1>
+        <span class="microapp-window-spacer" aria-hidden="true"></span>
       </div>
       <header class="mb-4">
         <p class="text-sm text-gray-400 font-normal">Today: <span class="font-semibold text-indigo-500" x-text="today_count"></span> pomodoros</p>
       </header>
-      <div class="miniapp-shell-content">
+      <div class="microapp-shell-content">
         <header :class="design_system.tabs.header">
           <ul :class="design_system.tabs.list">
             <template x-for="tab in tabs.items">
@@ -257,6 +257,6 @@
       </div>
     </div>
     </template>
-    <script type="module" src="/miniapps/daily-pomodoro/main.js"></script>
+    <script type="module" src="/microapps/daily-pomodoro/main.js"></script>
   </body>
 </html>

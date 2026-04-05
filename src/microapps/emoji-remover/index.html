@@ -11,37 +11,37 @@
   </style>
   <body
     x-data="emojiRemover"
-    class="miniapp-shell-bg"
+    class="microapp-shell-bg"
     x-cloak>
-    <main class="miniapp-shell-card" data-miniapp-window data-miniapp-close-href="/">
-      <div class="miniapp-window-bar" data-miniapp-window-handle>
-        <div class="miniapp-window-controls" role="group" aria-label="Window controls">
+    <main class="microapp-shell-card" data-microapp-window data-microapp-close-href="/">
+      <div class="microapp-window-bar" data-microapp-window-handle>
+        <div class="microapp-window-controls" role="group" aria-label="Window controls">
           <button
             type="button"
-            class="miniapp-window-control miniapp-window-control--close ds-tooltip"
-            data-miniapp-window-action="close"
-            data-tooltip="Close miniapp"
-            aria-label="Close miniapp">
+            class="microapp-window-control microapp-window-control--close ds-tooltip"
+            data-microapp-window-action="close"
+            data-tooltip="Close microapp"
+            aria-label="Close microapp">
           </button>
           <button
             type="button"
-            class="miniapp-window-control miniapp-window-control--minimize ds-tooltip"
-            data-miniapp-window-action="minimize"
+            class="microapp-window-control microapp-window-control--minimize ds-tooltip"
+            data-microapp-window-action="minimize"
             data-tooltip="Minimize window"
             aria-label="Minimize window"
             aria-pressed="false">
           </button>
           <button
             type="button"
-            class="miniapp-window-control miniapp-window-control--maximize ds-tooltip"
-            data-miniapp-window-action="maximize"
+            class="microapp-window-control microapp-window-control--maximize ds-tooltip"
+            data-microapp-window-action="maximize"
             data-tooltip="Maximize window"
             aria-label="Maximize window"
             aria-pressed="false">
           </button>
         </div>
-        <h1 class="miniapp-window-title">😭 Emoji Remover</h1>
-        <span class="miniapp-window-spacer" aria-hidden="true"></span>
+        <h1 class="microapp-window-title">😭 Emoji Remover</h1>
+        <span class="microapp-window-spacer" aria-hidden="true"></span>
       </div>
 
       <!-- Steps -->
@@ -74,7 +74,7 @@
 
       <p class="text-xs text-[#6F6E69] mb-3" x-text="current_step_title"></p>
 
-      <section class="miniapp-shell-content min-h-0 overflow-y-auto">
+      <section class="microapp-shell-content min-h-0 overflow-y-auto">
 
         <!-- Step 1: Paste -->
         <section
@@ -292,6 +292,6 @@
       </footer>
 
     </main>
-    <script type="module" src="/miniapps/emoji-remover/main.js"></script>
+    <script type="module" src="/microapps/emoji-remover/main.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
-const WINDOW_CARD_SELECTOR = '[data-miniapp-window]'
-const WINDOW_HANDLE_SELECTOR = '[data-miniapp-window-handle]'
-const WINDOW_CONTROL_SELECTOR = '[data-miniapp-window-action]'
+const WINDOW_CARD_SELECTOR = '[data-microapp-window]'
+const WINDOW_HANDLE_SELECTOR = '[data-microapp-window-handle]'
+const WINDOW_CONTROL_SELECTOR = '[data-microapp-window-action]'
 const VIEWPORT_GUTTER = 12
 
 let isWindowSystemInitialized = false
@@ -71,8 +71,8 @@ const applyMaximizedFrame = (card) => {
 }
 
 const updateControls = (card, state) => {
-    const minimizeButton = card.querySelector('[data-miniapp-window-action="minimize"]')
-    const maximizeButton = card.querySelector('[data-miniapp-window-action="maximize"]')
+    const minimizeButton = card.querySelector('[data-microapp-window-action="minimize"]')
+    const maximizeButton = card.querySelector('[data-microapp-window-action="maximize"]')
 
     if (minimizeButton) {
         minimizeButton.setAttribute('aria-pressed', state.isMinimized ? 'true' : 'false')
@@ -151,8 +151,8 @@ const setMaximized = (card, nextValue) => {
     updateControls(card, state)
 }
 
-const closeMiniappWindow = (card) => {
-    const targetHref = card.getAttribute('data-miniapp-close-href') || '/'
+const closeMicroappWindow = (card) => {
+    const targetHref = card.getAttribute('data-microapp-close-href') || '/'
     window.location.assign(targetHref)
 }
 
@@ -194,7 +194,7 @@ const bindWindowCard = (card) => {
             offsetY: event.clientY - rect.top
         }
 
-        document.body.classList.add('miniapp-window-dragging')
+        document.body.classList.add('microapp-window-dragging')
         handle.setPointerCapture(event.pointerId)
     }
 
@@ -222,7 +222,7 @@ const bindWindowCard = (card) => {
         }
 
         state.drag = null
-        document.body.classList.remove('miniapp-window-dragging')
+        document.body.classList.remove('microapp-window-dragging')
 
         if (handle.hasPointerCapture(event.pointerId)) {
             handle.releasePointerCapture(event.pointerId)
@@ -244,9 +244,9 @@ const bindWindowCard = (card) => {
             return
         }
 
-        const action = control.getAttribute('data-miniapp-window-action')
+        const action = control.getAttribute('data-microapp-window-action')
         if (action === 'close') {
-            closeMiniappWindow(card)
+            closeMicroappWindow(card)
             return
         }
 
@@ -261,7 +261,7 @@ const bindWindowCard = (card) => {
     })
 }
 
-export function initializeMiniappWindows() {
+export function initializeMicroappWindows() {
     if (typeof window === 'undefined') {
         return
     }
@@ -290,4 +290,4 @@ export function initializeMiniappWindows() {
     })
 }
 
-export default initializeMiniappWindows
+export default initializeMicroappWindows
