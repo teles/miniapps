@@ -14,7 +14,8 @@ export default function (Alpine) {
     return {
         shell: createMiniappShell(Alpine, {
             defaultTab: 'home',
-            tabItems: tabControllers.items
+            tabItems: tabControllers.items,
+            key: 'pomodoro'
         }),
         shared: createPomodoroSharedContext(Alpine),
         design_system: {
@@ -31,6 +32,8 @@ export default function (Alpine) {
             configs: tabControllers.configs.state
         },
         _timer_targets: new WeakSet(),
+        _pomodoro_key_by_object: new WeakMap(),
+        _pomodoro_key_counts: new Map(),
         get tabs() {
             return this.shell.tabs
         },
@@ -125,24 +128,35 @@ export default function (Alpine) {
             return this.tabs.active === 'archived'
         },
         get_visible_pomodoros() {
-            return this.is_archived_tab() ? this.pomodoros_archived : this.pomodoros
+            const source = this.is_archived_tab() ? this.pomodoros_archived : this.pomodoros
+            if (!Array.isArray(source)) {
+                return []
+            }
+
+            return source.filter((item) => item && typeof item === 'object')
         },
         get_pomodoro_key(pomodoro, index = 0) {
             if (!pomodoro || typeof pomodoro !== 'object') {
-                return `pomodoro-${index}`
+                return `pomodoro-invalid-${index}`
             }
 
-            if (!pomodoro._ui_key) {
-                const baseKey = pomodoro.id
-                    || pomodoro.started_at
-                    || pomodoro.archived_at
-                    || pomodoro.done_at
-                    || `idx-${index}`
-
-                pomodoro._ui_key = `pomodoro-${String(baseKey)}`
+            if (this._pomodoro_key_by_object.has(pomodoro)) {
+                return this._pomodoro_key_by_object.get(pomodoro)
             }
 
-            return pomodoro._ui_key
+            const rawBase = pomodoro.id
+                || pomodoro.started_at
+                || pomodoro.archived_at
+                || pomodoro.done_at
+                || `legacy-${index}`
+            const baseKey = `pomodoro-${String(rawBase)}`
+            const duplicateCount = this._pomodoro_key_counts.get(baseKey) || 0
+            const key = duplicateCount === 0 ? baseKey : `${baseKey}-${duplicateCount}`
+
+            this._pomodoro_key_counts.set(baseKey, duplicateCount + 1)
+            this._pomodoro_key_by_object.set(pomodoro, key)
+
+            return key
         },
         get_pomodoro_order_class(pomodoro) {
             if (this.is_archived_tab()) {

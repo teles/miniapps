@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import pomodoroCore from './app.js'
 
+const makePersistedValue = (value) => {
+    if (typeof value !== 'object' || value === null) {
+        return { as: () => value }
+    }
+    if (Array.isArray(value)) return value
+    const obj = { ...value }
+    obj.as = function () { return this }
+    return obj
+}
+
 const AlpineMocked = {
-    $persist: (value) => value
+    $persist: makePersistedValue
 }
 
 describe('pomodoro core', () => {
@@ -100,5 +110,36 @@ describe('pomodoro core', () => {
         const keyAfter = pomodoro.get_pomodoro_key(item, 0)
 
         expect(keyAfter).toBe(keyBefore)
+    })
+
+    it('generates unique stable keys for legacy pomodoros without id', () => {
+        const pomodoro = pomodoroCore(AlpineMocked)
+        const sameTimestamp = '2026-04-05T20:00:00.000Z'
+        const itemA = { text: 'Legacy A', stage: 'focus_paused', started_at: sameTimestamp }
+        const itemB = { text: 'Legacy B', stage: 'focus_paused', started_at: sameTimestamp }
+
+        pomodoro.pomodoros = [itemA, itemB]
+
+        const keyA = pomodoro.get_pomodoro_key(itemA, 0)
+        const keyB = pomodoro.get_pomodoro_key(itemB, 1)
+
+        expect(keyA).not.toBe(keyB)
+        expect(pomodoro.get_pomodoro_key(itemA, 0)).toBe(keyA)
+        expect(pomodoro.get_pomodoro_key(itemB, 1)).toBe(keyB)
+    })
+
+    it('filters invalid entries from visible pomodoros', () => {
+        const pomodoro = pomodoroCore(AlpineMocked)
+        pomodoro.pomodoros = [
+            null,
+            undefined,
+            'invalid',
+            { text: 'Valid item', stage: 'focus_paused' }
+        ]
+
+        const visible = pomodoro.get_visible_pomodoros()
+
+        expect(visible).toHaveLength(1)
+        expect(visible[0].text).toBe('Valid item')
     })
 })

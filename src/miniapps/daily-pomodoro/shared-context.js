@@ -157,6 +157,8 @@ const createStages = () => stageDefinitions.map((definition) => {
     }
 })
 
+let _pomodoroIdCounter = 0
+
 export default function createPomodoroSharedContext(Alpine) {
     const stages = createStages()
     const stagesMap = stages.reduce((total, stage) => {
@@ -184,6 +186,7 @@ export default function createPomodoroSharedContext(Alpine) {
     }
 
     const buildPomodoro = (text, stageName = 'focus_paused') => ({
+        id: `${Date.now()}-${++_pomodoroIdCounter}`,
         text,
         stage: stageName,
         state: getStageState(stageName),
