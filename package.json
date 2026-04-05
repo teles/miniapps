@@ -1,25 +1,22 @@
 {
   "name": "minitools",
   "version": "1.0.0",
+  "type": "module",
   "main": "src/js/pomodoro.js",
   "license": "MIT",
   "devDependencies": {
-    "ava": "^5.2.0",
-    "css-loader": "^6.7.3",
-    "html-webpack-plugin": "^5.5.0",
     "postcss": "^8.4.21",
-    "postcss-loader": "^7.1.0",
     "postcss-preset-env": "^8.1.0",
-    "style-loader": "^3.3.2",
-    "webpack": "^5.76.3",
-    "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.13.1"
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
   },
   "scripts": {
-    "dev": "webpack --mode development",
-    "build": "webpack --mode production",
-    "start": "webpack-dev-server --mode development --open",
-    "test": "ava"     
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite --open",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@alpinejs/persist": "3.12.0",

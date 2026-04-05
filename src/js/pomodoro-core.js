@@ -85,7 +85,7 @@ const stages = [
         },
         state: 'paused',
         cycle: 'breaking',
-        on_timer_click: 'breaking_finished',
+        on_timer_click: 'archived',
         button: 'remove'
     },
     {
@@ -99,7 +99,7 @@ const stages = [
         },
         state: 'paused',
         cycle: 'breaking',
-        on_timer_click: 'breaking_finished',
+        on_timer_click: 'archived',
         button: 'remove'
     }    
 ]
@@ -107,15 +107,33 @@ const stages = [
 export default function (Alpine) {
     const seconds_focus = 25 * 60
     const seconds_breaking = 5 * 60
+    const get_stage_state = (stage_name) => {
+        const stage = stages.find(s => s.name === stage_name)
+        return stage ? stage.state : 'paused'
+    }
+
     const get_mockup_pomodoro = (text, stage) => ({
         text,
         stage,
+        state: get_stage_state(stage),
         is_editing: false,
         time_left: seconds_focus,
         breaking_left: seconds_breaking,
         started_at: new Date,
         finished_at: null
     })
+
+    const notify = (title, body) => {
+        if (!('Notification' in window)) return
+        const send = () => new Notification(title, { body })
+        if (Notification.permission === 'granted') {
+            send()
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') send()
+            })
+        }
+    }
 
     return {
         icons: {
@@ -161,6 +179,49 @@ export default function (Alpine) {
             running_first: false,
             start_anytime: true
         }),
+        daily_count: Alpine.$persist({
+            date: new Date().toDateString(),
+            count: 0
+        }),
+        modal: {
+            is_open: false,
+            title: 'Modal content',
+            cancel_label: 'Cancel',
+            confirm_label: 'Confirm'
+        },
+        open_modal(modal = {}){
+            this.modal.is_open = true;
+            this.modal.title = modal.title;
+            this.modal.cancel_label = modal.cancel_label;
+            this.modal.confirm_label = modal.confirm_label;
+            this.modal.on_cancel = () => {
+                modal.on_cancel();
+                this.close_modal();
+            };
+            this.modal.on_confirm = () => {
+                modal.on_confirm();
+                this.close_modal();
+            }
+        },
+        close_modal(){
+            this.modal = {
+                is_open: false
+            }
+        },
+        get today_count() {
+            if (this.daily_count.date !== new Date().toDateString()) {
+                this.daily_count.date = new Date().toDateString()
+                this.daily_count.count = 0
+            }
+            return this.daily_count.count
+        },
+        increment_daily_count() {
+            if (this.daily_count.date !== new Date().toDateString()) {
+                this.daily_count.date = new Date().toDateString()
+                this.daily_count.count = 0
+            }
+            this.daily_count.count++
+        },
         tabs: Alpine.$persist({
             active: 'home',
             items: [
@@ -183,39 +244,112 @@ export default function (Alpine) {
             ]
         }),  
         pomodoros: Alpine.$persist([
-            get_mockup_pomodoro('Buy tomatos', 'focus_running'),
+            get_mockup_pomodoro('Buy tomatos', 'focus_paused'),
             get_mockup_pomodoro('Defeat Thanos and save the entire universe', 'focus_paused'),
-            get_mockup_pomodoro('Wash dishes', 'focus_finished')
+            get_mockup_pomodoro('Wash dishes', 'focus_paused')
         ]),
         pomodoros_archived: Alpine.$persist([]),
+        _intervals: [],
         get_stage_by_pomodoro(pomodoro) {
             return stages.find(stage => stage.name === pomodoro.stage)
         },
         handle_timer_click(pomodoro) {
+            const current_stage = this.get_stage_by_pomodoro(pomodoro)
+            const next_stage = current_stage.on_timer_click
+
+            if (!this.configs.start_anytime && next_stage === 'focus_running') {
+                const already_running = this.pomodoros.some(
+                    item => item !== pomodoro && this.get_stage_by_pomodoro(item).state === 'running'
+                )
+                if (already_running) return
+            }
+
             this.pomodoros
                 .filter(item => item !== pomodoro)
-                .forEach(pomodoro => {
-                    const stage = stages.find(stage => stage.name === pomodoro.stage);
-                    pomodoro.stage = stage.on_timer_click_away || pomodoro.stage;
-            })
-            pomodoro.stage = this.get_stage_by_pomodoro(pomodoro).on_timer_click
+                .forEach(item => {
+                    const stage = stages.find(stage => stage.name === item.stage);
+                    const new_stage_name = stage.on_timer_click_away || item.stage
+                    item.stage = new_stage_name
+                    item.state = get_stage_state(new_stage_name)
+                })
+            pomodoro.stage = next_stage
+            pomodoro.state = get_stage_state(next_stage)
+        },
+        remove(pomodoro) {
+            const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
+            if (pomodoro_stage.state === 'paused') {
+                this.pomodoros = this.pomodoros.filter(item => item !== pomodoro)
+            }
         },
         handle_button_timer_click(pomodoro, button_name) {
             const callback = {
-                'remove': (pomodoro) => {
-                    const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
-                    if(pomodoro_stage.state === 'paused') {
-                        this.pomodoros = this.pomodoros.filter(item => item !== pomodoro)
-                    }                    
-            }}[button_name]
+                'remove': (pomodoro) => this.remove(pomodoro)
+            }[button_name]
             callback(pomodoro);
+        },
+        register_interval(id) {
+            this._intervals.push(id)
         },
         countdown(pomodoro) {
             const pomodoro_stage = this.get_stage_by_pomodoro(pomodoro)
             if(pomodoro_stage.state === 'running') {
-                pomodoro[pomodoro_stage.timer_property] === 0 
-                    ? ( pomodoro.stage = pomodoro_stage.on_countdown || pomodoro.stage )
-                    : pomodoro[pomodoro_stage.timer_property]--
+                if(pomodoro[pomodoro_stage.timer_property] === 0) {
+                    const is_focus_done = pomodoro_stage.name === 'focus_running'
+                    notify(
+                        is_focus_done ? '🍅 Focus session done!' : '☕ Break over!',
+                        pomodoro.text
+                    )
+                    if (is_focus_done) {
+                        this.increment_daily_count()
+                    }
+                    const modal = {
+                        title: pomodoro.text,
+                        confirm_label: 'Go to next stage',
+                        cancel_label: 'Cancel',
+                    }
+                    modal.on_confirm = () => {
+                        if (pomodoro_stage.on_countdown === 'archived') {
+                            pomodoro.finished_at = new Date()
+                            this.pomodoros_archived.push(pomodoro)
+                            this.pomodoros = this.pomodoros.filter(item => item !== pomodoro)
+                        } else {
+                            const next = pomodoro_stage.on_countdown || pomodoro.stage
+                            pomodoro.stage = next
+                            pomodoro.state = get_stage_state(next)
+                        }
+                    }
+                    modal.on_cancel = () => {}
+                    this.open_modal(modal);
+                } else {
+                    pomodoro[pomodoro_stage.timer_property]--
+                }
+            }
+        },
+        update_state(desired_state, pomodoro) {
+            const current_stage = this.get_stage_by_pomodoro(pomodoro)
+            if (desired_state === 'running') {
+                if (current_stage.state === 'running') return
+                const running_stage_name = current_stage.cycle === 'focus' ? 'focus_running' : 'breaking_running'
+                this.pomodoros
+                    .filter(item => item !== pomodoro)
+                    .forEach(item => {
+                        const stage = stages.find(s => s.name === item.stage)
+                        const new_stage_name = stage.on_timer_click_away || item.stage
+                        item.stage = new_stage_name
+                        item.state = get_stage_state(new_stage_name)
+                    })
+                pomodoro.stage = running_stage_name
+                pomodoro.state = 'running'
+            } else if (desired_state === 'paused') {
+                if (current_stage.state !== 'running') return
+                const paused_stage_name = current_stage.cycle === 'focus' ? 'focus_paused' : 'breaking_paused'
+                pomodoro.stage = paused_stage_name
+                pomodoro.state = 'paused'
+            } else if (desired_state === 'finished') {
+                if (current_stage.state !== 'running') return
+                const finished_stage_name = current_stage.cycle === 'focus' ? 'focus_finished' : 'breaking_finished'
+                pomodoro.stage = finished_stage_name
+                pomodoro.state = 'finished'
             }
         },
         new_pomodoro_text: '',

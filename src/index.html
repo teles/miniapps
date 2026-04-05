@@ -13,7 +13,7 @@
     x-data="pomodoro" 
     class="w-full flex justify-center bg-gradient-to-t from-blue-500 to-indigo-500 min-h-screen flex justify-items-center items-center min-w-full"
     x-cloak>
-    <main class="h-100 w-full flex-col justify-center font-sans p-8 bg-white shadow rounded m-4 max-w-[450px] h-[500px]">
+    <main class="w-full flex flex-col justify-center font-sans p-8 bg-white shadow rounded m-4 max-w-[450px] h-[500px] overflow-hidden">
       <header class="mb-4">
         <h1 class="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="30px" width="30px" version="1.1" id="Capa_1" viewBox="0 0 17.208 17.208" xml:space="preserve" class="mr-2">
@@ -22,8 +22,9 @@
         </svg>          
         <p>Daily Pomodoros</p>
         </h1>
+        <p class="text-sm text-gray-400 font-normal">Today: <span class="font-semibold text-indigo-500" x-text="today_count"></span> pomodoros</p>
       </header>
-      <div>
+      <div class="flex-1 min-h-0 flex flex-col">
         <header class="text-sm font-medium text-center text-gray-500 border-b border-gray-200">
           <ul class="flex flex-wrap -mb-px">
             <template x-for="tab in tabs.items">
@@ -51,7 +52,7 @@
             </template>
           </ul>
         </header>
-        <section x-show="tabs.active === 'home'" class="min-h-[320px]">
+        <section x-show="tabs.active === 'home'" class="flex-1 min-h-0 flex flex-col">
           <div class="flex my-4 bg-white">
             <input 
               class="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" 
@@ -67,7 +68,7 @@
               Add 
             </button>
           </div>
-          <div class="flex flex-col mt-2 overflow-auto h-[250px] max-h-[250px]">
+          <div class="flex flex-col mt-2 overflow-auto flex-1 min-h-0">
             <template x-for="pomodoro in pomodoros">
               <article 
                 class="mb-2" 
@@ -102,7 +103,7 @@
                     <div 
                       class="my-1 px-3 py-2 shadow flex rounded-r-md shadow-sm min-w-[70px]"
                       :class="stages_map[pomodoro.stage].styles.timer"
-                      x-init="window.setInterval(() => { countdown(pomodoro) }, 1_000)">
+                      x-init="$watch('pomodoro.stage', () => {}); register_interval(window.setInterval(() => { countdown(pomodoro) }, 1_000))">
                       <span x-text="Math.floor(pomodoro[stages_map[pomodoro.stage].timer_property] / 60)"></span>
                       <span>:</span>
                       <span x-text="Math.floor(pomodoro[stages_map[pomodoro.stage].timer_property] % 60) < 10 ? '0' + Math.floor(pomodoro[stages_map[pomodoro.stage].timer_property] % 60) : Math.floor(pomodoro[stages_map[pomodoro.stage].timer_property] % 60)"></span>
@@ -130,10 +131,20 @@
             </template>
           </div>
         </section>
-        <section x-show="tabs.active === 'archived'" class="min-h-[320px]">        
-          <p x-text="JSON.stringify(pomodoros.filter(pomodoro => pomodoro.stage === 'archived'))"></p>
+        <section x-show="tabs.active === 'archived'" class="flex-1 min-h-0">
+          <div class="flex flex-col mt-2 overflow-auto h-full">
+            <template x-if="pomodoros_archived.length === 0">
+              <p class="text-center text-gray-400 text-sm mt-8">No archived pomodoros yet.</p>
+            </template>
+            <template x-for="pomodoro in pomodoros_archived">
+              <div class="flex items-center justify-between pl-3 pr-2 py-2 border rounded mt-2 bg-green-50 border-green-200">
+                <p class="text-sm font-medium text-green-700 flex-1" x-text="pomodoro.text"></p>
+                <span class="text-xs text-green-500 ml-2" x-text="new Date(pomodoro.finished_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
+              </div>
+            </template>
+          </div>
         </section>
-        <section x-show="tabs.active === 'configs'" class="pt-4 min-h-[320px]">
+        <section x-show="tabs.active === 'configs'" class="pt-4 flex-1 min-h-0 overflow-auto">
           <h2 class="text-lg mb-2 text-gray-600 font-bold">Preferences</h2>
           <label class="w-full block text-gray-500">
             <input class="mr-2 leading-tight" type="checkbox" x-model="configs.running_first">
@@ -150,5 +161,42 @@
         </section>
       </div>
     </main>
+    <template x-if="modal.is_open === true">
+    <div 
+      tabindex="-1" 
+      class="flex fixed inset-0 z-50 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] md:h-full">
+      <div class="bg-black/70 inset-o absolute w-full h-full cursor-pointer" @click="modal.is_open = false"></div>
+        <div class="relative w-full h-full max-w-md md:h-auto m-auto">
+          <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+              <button 
+                type="button" 
+                class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
+                @click="modal.is_open = false">
+                  <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                  <span class="sr-only">Close modal</span>
+              </button>
+              <div class="p-6 text-center">
+                  <h3 
+                    class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400"
+                    x-text="modal.title">
+                  </h3>
+                  <button 
+                    type="button" 
+                    class="text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2"
+                    x-text="modal.confirm_label"
+                    @click="modal.on_confirm()">
+                  </button>
+                  <button 
+                    type="button" 
+                    class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                    x-text="modal.cancel_label"
+                    @click="modal.on_cancel()">
+                  </button>
+              </div>
+          </div>
+      </div>
+    </div>
+    </template>
+    <script type="module" src="/js/pomodoro.js"></script>
   </body>
 </html>

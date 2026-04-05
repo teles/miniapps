@@ -1,15 +1,16 @@
-import test from 'ava'
+import { describe, expect, it } from 'vitest'
 import pomodoroCore from './pomodoro-core.js'
 
 const AlpineMocked = {
 	$persist: x => x
 }
 
-test('Pomodoro core should exist', t => {
-	t.truthy(pomodoroCore(AlpineMocked))
-});
+describe('pomodoro core', () => {
+  it('should exist', () => {
+    expect(pomodoroCore(AlpineMocked)).toBeTruthy()
+  })
 
-test('Add and remove pomodoros should work properly', t => {
+  it('add and remove pomodoros should work properly', () => {
     const pomodoro = pomodoroCore(AlpineMocked);
     const initial_pomodoros_length = pomodoro.pomodoros.length;
     pomodoro.new_pomodoro_text = 'Example 1'
@@ -18,18 +19,18 @@ test('Add and remove pomodoros should work properly', t => {
     pomodoro.add()    
     pomodoro.new_pomodoro_text = 'Example 3'
     pomodoro.add()
-    t.is(pomodoro.pomodoros.length, initial_pomodoros_length + 3)
+    expect(pomodoro.pomodoros.length).toBe(initial_pomodoros_length + 3)
     pomodoro.add()
-    t.is(pomodoro.pomodoros.length, initial_pomodoros_length + 3)
+    expect(pomodoro.pomodoros.length).toBe(initial_pomodoros_length + 3)
     pomodoro.remove(pomodoro.pomodoros.at(-1))
-    t.is(pomodoro.pomodoros.length, initial_pomodoros_length + 2)
+    expect(pomodoro.pomodoros.length).toBe(initial_pomodoros_length + 2)
     pomodoro.remove(pomodoro.pomodoros.at(-1))
-    t.is(pomodoro.pomodoros.length, initial_pomodoros_length + 1)
+    expect(pomodoro.pomodoros.length).toBe(initial_pomodoros_length + 1)
     pomodoro.remove(pomodoro.pomodoros.at(-1))
-    t.is(pomodoro.pomodoros.length, initial_pomodoros_length)
-})
+    expect(pomodoro.pomodoros.length).toBe(initial_pomodoros_length)
+  })
 
-test('Update from one state to anothe works properly', t => {
+  it('update from one state to another works properly', () => {
     const pomodoro = pomodoroCore(AlpineMocked);
     ['Pomodoro 1', 'Pomodoro 2', 'Pomodoro 3', 'Pomodoro 4'].forEach(text => {
         pomodoro.new_pomodoro_text = text;
@@ -41,16 +42,17 @@ test('Update from one state to anothe works properly', t => {
     const pomodoro4 = pomodoro.pomodoros.find(pomodoro => pomodoro.text === 'Pomodoro 4')
 
     pomodoro.update_state('running', pomodoro1)
-    t.is(pomodoro1.state, 'running')
+    expect(pomodoro1.state).toBe('running')
     pomodoro.update_state('running', pomodoro1)
-    t.is(pomodoro1.state, 'running')
+    expect(pomodoro1.state).toBe('running')
     pomodoro.update_state('running', pomodoro2)
-    t.is(pomodoro1.state, 'paused')
+    expect(pomodoro1.state).toBe('paused')
     pomodoro.update_state('running', pomodoro3)
     pomodoro.update_state('finished', pomodoro3)
-    t.is(pomodoro3.state, 'finished')
+    expect(pomodoro3.state).toBe('finished')
     pomodoro.update_state('finished', pomodoro4)
-    t.is(pomodoro4.state, 'paused')
+    expect(pomodoro4.state).toBe('paused')
     pomodoro.update_state('paused', pomodoro4)
-    t.is(pomodoro4.state, 'paused')
+    expect(pomodoro4.state).toBe('paused')
+  })
 })

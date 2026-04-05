@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs'
 import persist from '@alpinejs/persist'
-import pomodoroCore from './pomodoro-core'
+import pomodoroCore from './pomodoro-core.js'
 import '../css/index.css'
 
 function pomodoro() {
