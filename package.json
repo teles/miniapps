@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "packageManager": "yarn@1.22.19",
-  "main": "src/microapps/daily-pomodoro/main.js",
+  "main": "src/microapps/pomodoros/main.js",
   "engines": {
     "node": ">=22 <23"
   },

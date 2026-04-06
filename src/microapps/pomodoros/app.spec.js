@@ -18,6 +18,23 @@ const AlpineMocked = {
     $persist: makePersistedValue
 }
 
+const withFakeDocument = (callback) => {
+    const hadDocument = Object.prototype.hasOwnProperty.call(globalThis, 'document')
+    const originalDocument = globalThis.document
+
+    globalThis.document = { title: '' }
+
+    try {
+        callback(globalThis.document)
+    } finally {
+        if (hadDocument) {
+            globalThis.document = originalDocument
+        } else {
+            delete globalThis.document
+        }
+    }
+}
+
 describe('transitionPomodoro (pure function)', () => {
     const stagesMap = {
         focus_paused: { state: 'paused' },
@@ -191,5 +208,55 @@ describe('pomodoro core', () => {
 
         expect(visible).toHaveLength(1)
         expect(visible[0].text).toBe('Valid item')
+    })
+
+    it('updates the page title with active pomodoro info', () => {
+        withFakeDocument((fakeDocument) => {
+            const pomodoro = pomodoroCore(AlpineMocked)
+            const activeTask = pomodoro.pomodoros[0]
+
+            pomodoro.shared.transition_pomodoro(activeTask, 'focus_running')
+            activeTask.time_left = 1_499
+            pomodoro.sync_page_title()
+
+            expect(fakeDocument.title).toBe('[24:59] Buy tomatos - Daily Pomodoros')
+        })
+    })
+
+    it('uses default title when there is no active pomodoro', () => {
+        withFakeDocument((fakeDocument) => {
+            const pomodoro = pomodoroCore(AlpineMocked)
+            pomodoro.sync_page_title()
+
+            expect(fakeDocument.title).toBe('Daily Pomodoros')
+        })
+    })
+
+    it('uses breaking timer when active pomodoro is in break cycle', () => {
+        withFakeDocument((fakeDocument) => {
+            const pomodoro = pomodoroCore(AlpineMocked)
+            const activeTask = pomodoro.pomodoros[0]
+
+            activeTask.text = 'Take a short break'
+            pomodoro.shared.transition_pomodoro(activeTask, 'breaking_running')
+            activeTask.breaking_left = 299
+            pomodoro.sync_page_title()
+
+            expect(fakeDocument.title).toBe('[4:59] Take a short break - Daily Pomodoros')
+        })
+    })
+
+    it('falls back to "Untitled task" when active task name is empty', () => {
+        withFakeDocument((fakeDocument) => {
+            const pomodoro = pomodoroCore(AlpineMocked)
+            const activeTask = pomodoro.pomodoros[0]
+
+            activeTask.text = '   '
+            pomodoro.shared.transition_pomodoro(activeTask, 'focus_running')
+            activeTask.time_left = 60
+            pomodoro.sync_page_title()
+
+            expect(fakeDocument.title).toBe('[1:00] Untitled task - Daily Pomodoros')
+        })
     })
 })

@@ -8,11 +8,16 @@ import {
 import createPomodoroSharedContext from './shared-context.js'
 import createPomodoroTabs from './tabs/index.js'
 
+const DEFAULT_PAGE_TITLE = 'Daily Pomodoros'
+
 export default function (Alpine) {
     const tabControllers = createPomodoroTabs()
     const persistAdapter = { persist: (v) => Alpine.$persist(v) }
 
     return {
+        init() {
+            this.sync_page_title()
+        },
         shell: createMicroappShell(Alpine, {
             defaultTab: 'home',
             tabItems: tabControllers.items,
@@ -97,30 +102,39 @@ export default function (Alpine) {
         },
         add() {
             this.tab_controllers.home.add(this)
+            this.sync_page_title()
         },
         remove(pomodoro) {
             this.shared.remove(pomodoro)
+            this.sync_page_title()
         },
         archive(pomodoro) {
             this.shared.archive_pomodoro(pomodoro)
+            this.sync_page_title()
         },
         restore_archived(pomodoro) {
             this.tab_controllers.archived.restore(this, pomodoro)
+            this.sync_page_title()
         },
         delete_archived(pomodoro) {
             this.tab_controllers.archived.delete(this, pomodoro)
+            this.sync_page_title()
         },
         handle_timer_click(pomodoro) {
             this.tab_controllers.home.handle_timer_click(this, pomodoro)
+            this.sync_page_title()
         },
         handle_button_timer_click(pomodoro, buttonName) {
             this.tab_controllers.home.handle_button_timer_click(this, pomodoro, buttonName)
+            this.sync_page_title()
         },
         countdown(pomodoro) {
             this.tab_controllers.home.countdown(this, pomodoro)
+            this.sync_page_title()
         },
         update_state(desiredState, pomodoro) {
             this.tab_controllers.home.update_state(this, desiredState, pomodoro)
+            this.sync_page_title()
         },
         is_home_tab() {
             return this.tabs.active === 'home'
@@ -210,6 +224,49 @@ export default function (Alpine) {
             }
 
             return stage.button === 'archive' ? 'Archive pomodoro' : 'Remove pomodoro'
+        },
+        get_active_pomodoro() {
+            if (!Array.isArray(this.pomodoros)) {
+                return null
+            }
+
+            return this.pomodoros.find((pomodoro) => {
+                if (!pomodoro || typeof pomodoro !== 'object') {
+                    return false
+                }
+
+                const stage = this.get_stage_by_pomodoro(pomodoro)
+                return Boolean(stage && stage.state === 'running')
+            }) || null
+        },
+        get_active_pomodoro_remaining_seconds(pomodoro) {
+            const stage = this.get_stage_by_pomodoro(pomodoro)
+            if (!stage) {
+                return 0
+            }
+
+            return Number(pomodoro[stage.timer_property]) || 0
+        },
+        sync_page_title() {
+            if (typeof document === 'undefined') {
+                return
+            }
+
+            const activePomodoro = this.get_active_pomodoro()
+            if (!activePomodoro) {
+                document.title = DEFAULT_PAGE_TITLE
+                return
+            }
+
+            const taskName = typeof activePomodoro.text === 'string'
+                ? activePomodoro.text.trim()
+                : ''
+            const safeTaskName = taskName.length > 0 ? taskName : 'Untitled task'
+            const remainingLabel = this.format_seconds(
+                this.get_active_pomodoro_remaining_seconds(activePomodoro)
+            )
+
+            document.title = `[${remainingLabel}] ${safeTaskName} - ${DEFAULT_PAGE_TITLE}`
         },
         ensure_timer_interval(pomodoro) {
             if (typeof window === 'undefined' || !pomodoro || typeof pomodoro !== 'object') {

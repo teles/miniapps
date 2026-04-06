@@ -3,7 +3,7 @@
 Microapps is a collection of small, focused productivity tools built as a multi-page web app.
 
 The project currently includes:
-- **Daily Pomodoros** (`/microapps/daily-pomodoro/`): a lightweight task + pomodoro flow.
+- **Daily Pomodoros** (`/microapps/pomodoros/`): a lightweight task + pomodoro flow.
 - **Emoji Remover** (`/microapps/emoji-remover/`): clean text by removing all or selected emojis.
 
 ## Core Engineering Principles
@@ -55,7 +55,7 @@ src/
   index.html                  # launcher
   launcher/
   microapps/
-    daily-pomodoro/
+    pomodoros/
     emoji-remover/
   packages/
     design-system/

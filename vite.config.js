@@ -40,7 +40,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         home: fileURLToPath(new URL('./src/index.html', import.meta.url)),
-        dailyPomodoro: fileURLToPath(new URL('./src/microapps/daily-pomodoro/index.html', import.meta.url)),
+        pomodoros: fileURLToPath(new URL('./src/microapps/pomodoros/index.html', import.meta.url)),
         emojiRemover: fileURLToPath(new URL('./src/microapps/emoji-remover/index.html', import.meta.url))
       }
     },
